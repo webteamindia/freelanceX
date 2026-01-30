@@ -26,7 +26,7 @@ async function main() {
     // Sellers
     prisma.user.create({
       data: {
-        email: "john.doe@fx.com",
+        email: "john@fx.com",
         password: await generatePassword("password123"),
         username: "johndoefx",
         fullName: "John Doe",
@@ -39,7 +39,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "sarah.wilson@fx.com",
+        email: "sarah@fx.com",
         password: await generatePassword("password123"),
         username: "sarahwilsonfx",
         fullName: "Sarah Wilson",
@@ -52,7 +52,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "mike.chen@fx.com",
+        email: "mike@fx.com",
         password: await generatePassword("password123"),
         username: "mikechenfx",
         fullName: "Mike Chen",
@@ -65,7 +65,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "emily.rodriguez@fx.com",
+        email: "emily@fx.com",
         password: await generatePassword("password123"),
         username: "emilyrodriguezfx",
         fullName: "Emily Rodriguez",
@@ -78,7 +78,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "david.kim@fx.com",
+        email: "david@fx.com",
         password: await generatePassword("password123"),
         username: "davidkimfx",
         fullName: "David Kim",
@@ -89,10 +89,23 @@ async function main() {
         isProfileInfoSet: true,
       },
     }),
+    prisma.user.create({
+      data: {
+        email: "james@fx.com",
+        password: await generatePassword("password123"),
+        username: "jameswilsonfx",
+        fullName: "James Wilson",
+        description:
+          "Expert video editor and motion graphics artist with a passion for storytelling.",
+        profileImage:
+          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=face",
+        isProfileInfoSet: true,
+      },
+    }),
     // Buyers
     prisma.user.create({
       data: {
-        email: "alice.johnson@fx.com",
+        email: "alice@fx.com",
         password: await generatePassword("password123"),
         username: "alicejohnsonfx",
         fullName: "Alice Johnson",
@@ -104,7 +117,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "robert.brown@fx.com",
+        email: "robert@fx.com",
         password: await generatePassword("password123"),
         username: "robertbrownfx",
         fullName: "Robert Brown",
@@ -116,13 +129,26 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "lisa.garcia@fx.com",
+        email: "lisa@fx.com",
         password: await generatePassword("password123"),
         username: "lisagarciafx",
         fullName: "Lisa Garcia",
         description: "Marketing manager at a growing company.",
         profileImage:
           "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
+        isProfileInfoSet: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "linda@fx.com",
+        password: await generatePassword("password123"),
+        username: "lindamartinezfx",
+        fullName: "Linda Martinez",
+        description:
+          "E-commerce entrepreneur looking for branding and dev work.",
+        profileImage:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
         isProfileInfoSet: true,
       },
     }),
@@ -149,7 +175,7 @@ async function main() {
           "Contact Form",
           "Modern UI/UX",
         ],
-        price: 299.99,
+        price: 300,
         images: [
           "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
           "https://images.unsplash.com/photo-1555421689-491a97ff2040?w=800&h=600&fit=crop",
@@ -174,7 +200,7 @@ async function main() {
           "User Authentication",
           "Deployment Ready",
         ],
-        price: 599.99,
+        price: 600,
         images: [
           "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop",
           "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=600&fit=crop",
@@ -199,7 +225,7 @@ async function main() {
           "Typography",
           "Source Files",
         ],
-        price: 149.99,
+        price: 150,
         images: [
           "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=600&fit=crop",
           "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=600&fit=crop",
@@ -223,7 +249,7 @@ async function main() {
           "Brand Consistency",
           "Multiple Formats",
         ],
-        price: 79.99,
+        price: 80,
         images: [
           "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=600&fit=crop",
           "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&h=600&fit=crop",
@@ -249,7 +275,7 @@ async function main() {
           "Technical SEO",
           "Monthly Reports",
         ],
-        price: 199.99,
+        price: 200,
         images: [
           "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=800&h=600&fit=crop",
           "https://images.unsplash.com/photo-1553830591-42e4fd7035ec?w=800&h=600&fit=crop",
@@ -274,7 +300,7 @@ async function main() {
           "Proper Formatting",
           "Plagiarism Free",
         ],
-        price: 89.99,
+        price: 90,
         images: [
           "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=600&fit=crop",
           "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop",
@@ -299,12 +325,37 @@ async function main() {
           "API Integration",
           "App Store Ready",
         ],
-        price: 899.99,
+        price: 900,
         images: [
           "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=600&fit=crop",
           "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=600&fit=crop",
         ],
         userId: users[4].id,
+      },
+    }),
+    // Video Animation Gigs
+    prisma.gig.create({
+      data: {
+        title: "I will edit your youtube videos professionally",
+        description:
+          "Professional video editing for YouTube, including cuts, transitions, color grading, and sound design. I will make your videos engaging and high-quality.",
+        shortDesc: "Professional YouTube video editing",
+        category: "Video & Animation",
+        deliveryTime: 5,
+        revisions: 3,
+        features: [
+          "Professional Cuts",
+          "Color Grading",
+          "Sound Design",
+          "Transitions",
+          "1080p/4K Export",
+        ],
+        price: 120,
+        images: [
+          "https://images.unsplash.com/photo-1574717432722-a0f9c27d2a97?w=800&h=600&fit=crop",
+          "https://images.unsplash.com/photo-1535016120720-40c6874c3b1c?w=800&h=600&fit=crop",
+        ],
+        userId: users[5].id,
       },
     }),
   ]);
@@ -315,46 +366,55 @@ async function main() {
   const orders = await Promise.all([
     prisma.order.create({
       data: {
-        buyerId: users[5].id, // Alice Johnson
+        buyerId: users[6].id, // Alice Johnson
         gigId: gigs[0].id, // React website
         paymentIntent: "pi_test_1234567890123456789",
-        price: 29999, // Price in cents
+        price: 30000, // Price in cents
         isCompleted: true,
       },
     }),
     prisma.order.create({
       data: {
-        buyerId: users[6].id, // Robert Brown
+        buyerId: users[7].id, // Robert Brown
         gigId: gigs[2].id, // Logo design
         paymentIntent: "pi_test_2345678901234567890",
-        price: 14999,
+        price: 15000,
         isCompleted: true,
       },
     }),
     prisma.order.create({
       data: {
-        buyerId: users[7].id, // Lisa Garcia
+        buyerId: users[8].id, // Lisa Garcia
         gigId: gigs[4].id, // SEO optimization
         paymentIntent: "pi_test_3456789012345678901",
-        price: 19999,
+        price: 20000,
         isCompleted: false,
       },
     }),
     prisma.order.create({
       data: {
-        buyerId: users[5].id, // Alice Johnson
+        buyerId: users[6].id, // Alice Johnson
         gigId: gigs[3].id, // Social media graphics
         paymentIntent: "pi_test_4567890123456789012",
-        price: 7999,
+        price: 8000,
         isCompleted: true,
       },
     }),
     prisma.order.create({
       data: {
-        buyerId: users[6].id, // Robert Brown
+        buyerId: users[7].id, // Robert Brown
         gigId: gigs[5].id, // Blog writing
         paymentIntent: "pi_test_5678901234567890123",
-        price: 8999,
+        price: 9000,
+        isCompleted: true,
+      },
+    }),
+    prisma.order.create({
+      data: {
+        buyerId: users[9].id, // Linda Martinez
+        gigId: gigs[7].id, // Video editing
+        paymentIntent: "pi_test_6789012345678901234",
+        price: 12000,
         isCompleted: true,
       },
     }),
@@ -370,7 +430,7 @@ async function main() {
         comment:
           "Excellent work! The website looks amazing and is exactly what I wanted. John was very professional and delivered on time.",
         gigId: gigs[0].id,
-        reviewerId: users[5].id, // Alice Johnson
+        reviewerId: users[6].id, // Alice Johnson
       },
     }),
     prisma.reviews.create({
@@ -379,7 +439,7 @@ async function main() {
         comment:
           "Outstanding logo design! Sarah understood my vision perfectly and created a beautiful brand identity.",
         gigId: gigs[2].id,
-        reviewerId: users[6].id, // Robert Brown
+        reviewerId: users[7].id, // Robert Brown
       },
     }),
     prisma.reviews.create({
@@ -388,7 +448,7 @@ async function main() {
         comment:
           "Great social media graphics! Very creative and professional. Will definitely work with Sarah again.",
         gigId: gigs[3].id,
-        reviewerId: users[5].id, // Alice Johnson
+        reviewerId: users[6].id, // Alice Johnson
       },
     }),
     prisma.reviews.create({
@@ -397,7 +457,16 @@ async function main() {
         comment:
           "Emily wrote fantastic blog posts that really engage our audience. Highly recommended!",
         gigId: gigs[5].id,
-        reviewerId: users[6].id, // Robert Brown
+        reviewerId: users[7].id, // Robert Brown
+      },
+    }),
+    prisma.reviews.create({
+      data: {
+        rating: 5,
+        comment:
+          "James did an amazing job with the video editing. The transitions were smooth and the pacing was perfect.",
+        gigId: gigs[7].id,
+        reviewerId: users[9].id, // Linda Martinez
       },
     }),
   ]);
@@ -409,7 +478,7 @@ async function main() {
     prisma.messages.create({
       data: {
         text: "Hi! I have some questions about the website project. Can we discuss the requirements in detail?",
-        senderId: users[5].id, // Alice Johnson
+        senderId: users[6].id, // Alice Johnson
         receiverId: users[0].id, // John Doe
         orderId: orders[0].id,
         isRead: true,
@@ -419,7 +488,7 @@ async function main() {
       data: {
         text: "Of course! I'd be happy to discuss the project details. What specific features are you looking for?",
         senderId: users[0].id, // John Doe
-        receiverId: users[5].id, // Alice Johnson
+        receiverId: users[6].id, // Alice Johnson
         orderId: orders[0].id,
         isRead: true,
       },
@@ -427,7 +496,7 @@ async function main() {
     prisma.messages.create({
       data: {
         text: "I need the website to have a contact form, photo gallery, and about page. Is that possible within the timeline?",
-        senderId: users[5].id, // Alice Johnson
+        senderId: users[6].id, // Alice Johnson
         receiverId: users[0].id, // John Doe
         orderId: orders[0].id,
         isRead: false,
@@ -436,7 +505,7 @@ async function main() {
     prisma.messages.create({
       data: {
         text: "Thank you for the beautiful logo design! I love how it turned out.",
-        senderId: users[6].id, // Robert Brown
+        senderId: users[7].id, // Robert Brown
         receiverId: users[1].id, // Sarah Wilson
         orderId: orders[1].id,
         isRead: true,
@@ -446,8 +515,17 @@ async function main() {
       data: {
         text: "I'm so glad you love it! It was a pleasure working on your brand identity.",
         senderId: users[1].id, // Sarah Wilson
-        receiverId: users[6].id, // Robert Brown
+        receiverId: users[7].id, // Robert Brown
         orderId: orders[1].id,
+        isRead: true,
+      },
+    }),
+    prisma.messages.create({
+      data: {
+        text: "Hi James, I have some raw footage I need edited for a YouTube vlog. Are you available?",
+        senderId: users[9].id, // Linda Martinez
+        receiverId: users[5].id, // James Wilson
+        orderId: orders[5].id,
         isRead: true,
       },
     }),
@@ -458,7 +536,7 @@ async function main() {
   console.log("✅ Seeding completed successfully!");
   console.log(`
   📊 Database seeded with:
-  - ${users.length} users (5 sellers, 3 buyers)
+  - ${users.length} users (6 sellers, 4 buyers)
   - ${gigs.length} gigs across different categories
   - ${orders.length} orders (some completed, some in progress)
   - ${reviews.length} reviews
@@ -466,16 +544,18 @@ async function main() {
   
   🔐 Test login credentials:
   Sellers:
-  - john.doe@fx.com / password123
-  - sarah.wilson@fx.com / password123
-  - mike.chen@fx.com / password123
-  - emily.rodriguez@fx.com / password123
-  - david.kim@fx.com / password123
+  - john@fx.com / password123
+  - sarah@fx.com / password123
+  - mike@fx.com / password123
+  - emily@fx.com / password123
+  - david@fx.com / password123
+  - james@fx.com / password123
   
   Buyers:
-  - alice.johnson@fx.com / password123
-  - robert.brown@fx.com / password123
-  - lisa.garcia@fx.com / password123
+  - alice@fx.com / password123
+  - robert@fx.com / password123
+  - lisa@fx.com / password123
+  - linda@fx.com / password123
   `);
 }
 

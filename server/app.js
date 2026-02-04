@@ -24,8 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: [process.env.PUBLIC_URL],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    origin: process.env.PUBLIC_URL
+      ? process.env.PUBLIC_URL.split(",").map((o) => o.trim())
+      : true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );

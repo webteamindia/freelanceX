@@ -1,4 +1,5 @@
-import { compare, genSalt, hash } from "bcrypt";
+import pkg from "bcryptjs";
+const { compare, genSalt, hash } = pkg;
 import prisma from "../prisma/client.js";
 import { AppError, handleServiceError } from "../utils/index.js";
 

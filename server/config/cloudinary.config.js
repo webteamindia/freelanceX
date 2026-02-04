@@ -1,7 +1,10 @@
+import { createRequire } from "module";
 import { v2 as cloudinary } from "cloudinary";
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { Env } from "./env.config.js";
+
+const require = createRequire(import.meta.url);
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 cloudinary.config({
   cloud_name: Env.CLOUDINARY_CLOUD_NAME,

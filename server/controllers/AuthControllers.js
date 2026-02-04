@@ -1,5 +1,7 @@
 import { renameSync } from "fs";
 import jwt from "jsonwebtoken";
+import pkg from "@prisma/client";
+const { Prisma } = pkg;
 import prisma from "../prisma/client.js";
 import { loginUser, registerUser } from "../services/authService.js";
 
@@ -41,16 +43,18 @@ export const login = async (req, res, next) => {
 };
 
 export const getUserInfo = async (req, res, next) => {
-  // console.log(req.userId);
   try {
-    if (req.userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: req.userId },
-      });
-      delete user.password;
-      // console.log({ user });
-      return res.status(200).json({ user });
+    if (!req.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
     }
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const { password, ...userWithoutPassword } = user;
+    return res.status(200).json({ user: userWithoutPassword });
   } catch (err) {
     console.log(err);
     return res.status(500).send("Internal Server Error");

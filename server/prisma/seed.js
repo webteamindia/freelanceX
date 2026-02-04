@@ -1,5 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { hash, genSalt } from "bcrypt";
+import prismaPkg from "@prisma/client";
+const { PrismaClient } = prismaPkg;
+import bcryptPkg from "bcryptjs";
+const { hash, genSalt } = bcryptPkg;
 
 const prisma = new PrismaClient();
 

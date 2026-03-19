@@ -7,6 +7,9 @@ import {
   updateGig,
   addReview,
   checkGigOrder,
+  getFavorites,
+  addFavorite,
+  removeFavorite,
 } from "../controllers/GigController.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 import { Router } from "express";
@@ -25,3 +28,6 @@ gigRoutes.put(
 gigRoutes.get("/search", searchGigs);
 gigRoutes.get("/check-gig-order/:gigId", verifyToken, checkGigOrder);
 gigRoutes.post("/review/:gigId", verifyToken, addReview);
+gigRoutes.get("/favorites", verifyToken, getFavorites);
+gigRoutes.post("/favorites", verifyToken, addFavorite);
+gigRoutes.delete("/favorites/:gigId", verifyToken, removeFavorite);

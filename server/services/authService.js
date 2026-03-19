@@ -3,7 +3,7 @@ const { compare, genSalt, hash } = pkg;
 import prisma from "../prisma/client.js";
 import { AppError, handleServiceError } from "../utils/index.js";
 
-const generatePassword = async (password) => {
+export const generatePassword = async (password) => {
   const salt = await genSalt();
   return await hash(password, salt);
 };

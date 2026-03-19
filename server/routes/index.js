@@ -4,6 +4,7 @@ import { dashboardRoutes } from "./DashboardRoutes.js";
 import { gigRoutes } from "./GigRoutes.js";
 import { messageRoutes } from "./MessagesRoutes.js";
 import { orderRoutes } from "./OrderRoutes.js";
+import { supportRoutes } from "./SupportRoutes.js";
 import express from "express";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.use("/api/gigs", gigRoutes);
 router.use("/api/orders", orderRoutes);
 router.use("/api/dashboard", dashboardRoutes);
 router.use("/api/messages", messageRoutes);
+router.use("/api/support", supportRoutes);
 
 export default router;

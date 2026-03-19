@@ -6,6 +6,8 @@ import {
   setUserImage,
   setUserInfo,
   signup,
+  requestPasswordReset,
+  resetPassword,
 } from "../controllers/AuthControllers.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 
@@ -13,6 +15,8 @@ const authRoutes = Router();
 
 authRoutes.post("/signup", signup);
 authRoutes.post("/login", login);
+authRoutes.post("/forgot-password", requestPasswordReset);
+authRoutes.post("/reset-password", resetPassword);
 authRoutes.post("/get-user-info", verifyToken, getUserInfo);
 authRoutes.post("/set-user-info", verifyToken, setUserInfo);
 

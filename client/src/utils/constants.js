@@ -13,6 +13,8 @@ export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`;
 export const GET_USER_INFO = `${AUTH_ROUTES}/get-user-info`;
 export const SET_USER_INFO = `${AUTH_ROUTES}/set-user-info`;
 export const SET_USER_IMAGE = `${AUTH_ROUTES}/set-user-image`;
+export const FORGOT_PASSWORD_ROUTE = `${AUTH_ROUTES}/forgot-password`;
+export const RESET_PASSWORD_ROUTE = `${AUTH_ROUTES}/reset-password`;
 
 export const ADD_GIG_ROUTE = `${GIG_ROUTES}/add`;
 export const GET_ALL_USER_GIGS_ROUTE = `${GIG_ROUTES}`;
@@ -21,6 +23,7 @@ export const UPDATE_GIG_ROUTE = `${GIG_ROUTES}/edit`;
 export const SEARCH_GIGS_ROUTE = `${GIG_ROUTES}/search`;
 export const CHECK_USER_ORDERED_GIG_ROUTE = `${GIG_ROUTES}/check-gig-order`;
 export const ADD_REVIEW_ROUTE = `${GIG_ROUTES}/review`;
+export const FAVORITES_ROUTE = `${GIG_ROUTES}/favorites`;
 
 export const CREATE_ORDER = `${ORDER_ROUTES}/create`;
 export const ORDER_SUCCESS = `${ORDER_ROUTES}/success`;
@@ -33,3 +36,6 @@ export const GET_UNREAD_MESSAGES = `${MESSAGE_ROUTES}/unread-messages`;
 export const MARK_AS_READ_ROUTE = `${MESSAGE_ROUTES}/mark-as-read`;
 
 export const GET_SELLER_DATA = `${DASHBOARD_DATA_ROUTES}/seller`;
+
+export const SUPPORT_ROUTES = `${API_URL}/support`;
+export const SUPPORT_CONTACT_ROUTE = `${SUPPORT_ROUTES}/contact`;

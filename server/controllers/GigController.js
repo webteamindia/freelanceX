@@ -243,3 +243,84 @@ export const addReview = async (req, res, next) => {
     return res.status(500).send("Internal Server Error");
   }
 };
+
+export const getFavorites = async (req, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const favorites = await prisma.favorite.findMany({
+      where: { userId: req.userId },
+      include: {
+        gig: {
+          include: {
+            createdBy: true,
+            reviews: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const gigs = favorites.map((fav) => fav.gig);
+
+    return res.status(200).json({ gigs });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+export const addFavorite = async (req, res, next) => {
+  try {
+    const { gigId } = req.body;
+    if (!req.userId || !gigId) {
+      return res.status(400).json({ message: "userId and gigId are required" });
+    }
+
+    const existing = await prisma.favorite.findFirst({
+      where: {
+        userId: req.userId,
+        gigId,
+      },
+    });
+
+    if (existing) {
+      return res.status(200).json({ message: "Already in favorites" });
+    }
+
+    await prisma.favorite.create({
+      data: {
+        userId: req.userId,
+        gigId,
+      },
+    });
+
+    return res.status(201).json({ message: "Added to favorites" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+export const removeFavorite = async (req, res, next) => {
+  try {
+    const { gigId } = req.params;
+    if (!req.userId || !gigId) {
+      return res.status(400).json({ message: "userId and gigId are required" });
+    }
+
+    await prisma.favorite.deleteMany({
+      where: {
+        userId: req.userId,
+        gigId,
+      },
+    });
+
+    return res.status(200).json({ message: "Removed from favorites" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Internal Server Error");
+  }
+};

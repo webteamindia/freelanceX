@@ -77,6 +77,15 @@ const NavBar = () => {
     { linkName: "X Business", handler: "#", type: "link" },
     { linkName: "Explore", handler: "#", type: "link" },
     { linkName: "Become a Seller", handler: "#", type: "link" },
+    ...(process.env.NODE_ENV === "development"
+      ? [
+          {
+            linkName: "Dev",
+            handler: "/dev",
+            type: "link",
+          },
+        ]
+      : []),
     { linkName: "Sign in", handler: handleLogin, type: "button" },
     { linkName: "Join", handler: handleSignup, type: "button2" },
   ];
@@ -202,8 +211,10 @@ const NavBar = () => {
                   }
                 >
                   <span className="text-2xl md:text-3xl font-semibold flex items-center">
-                    <i>freelance</i>{" "}
-                    <b className="text-green-700 text-3xl md:text-4xl">X</b>
+                    <b className="text-green-700 text-3xl md:text-4xl">ff</b>
+                    <span className="text-2xl md:text-3xl font-semibold ml-1">
+                      iver
+                    </span>
                   </span>
                 </p>
               </Link>
@@ -265,6 +276,13 @@ const NavBar = () => {
                 </ul>
               ) : (
                 <ul className="flex gap-10 items-center">
+                  {process.env.NODE_ENV === "development" && (
+                    <li className="font-medium text-gray-500">
+                      <Link href="/dev" className="hover:text-[#1DBF73]">
+                        Dev
+                      </Link>
+                    </li>
+                  )}
                   {isSeller && (
                     <li
                       className="cursor-pointer text-[#1DBF73] font-medium"
@@ -439,6 +457,17 @@ const NavBar = () => {
                     >
                       Profile
                     </div>
+                    {process.env.NODE_ENV === "development" && (
+                      <div
+                        className="w-full text-center py-3 hover:bg-gray-100"
+                        onClick={() => {
+                          router.push("/dev");
+                          setIsOpen(false);
+                        }}
+                      >
+                        Dev
+                      </div>
+                    )}
                     <div
                       className="w-full text-center py-3 hover:bg-gray-100"
                       onClick={() => {

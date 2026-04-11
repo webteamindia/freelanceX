@@ -10,6 +10,8 @@ export const DASHBOARD_DATA_ROUTES = `${API_URL}/dashboard`;
 
 export const SIGNUP_ROUTE = `${AUTH_ROUTES}/signup`;
 export const LOGIN_ROUTE = `${AUTH_ROUTES}/login`;
+export const OAUTH_GOOGLE_ROUTE = `${AUTH_ROUTES}/oauth-google`;
+export const GET_PUBLIC_PROFILE = `${AUTH_ROUTES}/profile`;
 export const GET_USER_INFO = `${AUTH_ROUTES}/get-user-info`;
 export const SET_USER_INFO = `${AUTH_ROUTES}/set-user-info`;
 export const SET_USER_IMAGE = `${AUTH_ROUTES}/set-user-image`;
@@ -39,3 +41,10 @@ export const GET_SELLER_DATA = `${DASHBOARD_DATA_ROUTES}/seller`;
 
 export const SUPPORT_ROUTES = `${API_URL}/support`;
 export const SUPPORT_CONTACT_ROUTE = `${SUPPORT_ROUTES}/contact`;
+
+export const ADMIN_ROUTES = `${API_URL}/admin`;
+export const ADMIN_OVERVIEW_ROUTE = `${ADMIN_ROUTES}/overview`;
+export const ADMIN_USERS_ROUTE = `${ADMIN_ROUTES}/users`;
+export const ADMIN_ORDERS_ROUTE = `${ADMIN_ROUTES}/orders`;
+export const ADMIN_TICKETS_ROUTE = `${ADMIN_ROUTES}/tickets`;
+export const ADMIN_GIGS_ROUTE = `${ADMIN_ROUTES}/gigs`;

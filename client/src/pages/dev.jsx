@@ -20,12 +20,12 @@ const DevPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-800 shadow-[0_10px_30px_rgba(0,0,0,0.4)] rounded-2xl p-8">
+        <h1 className="text-2xl font-semibold text-white mb-2">
           Dev pages
         </h1>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-zinc-400 mb-6">
           Quick links to new UI-only pages. Only linked in nav when running in
           development.
         </p>
@@ -34,11 +34,11 @@ const DevPage = () => {
             <li key={href}>
               <Link
                 href={href}
-                className="text-[#1DBF73] hover:underline font-medium"
+                className="text-primary hover:underline font-medium"
               >
                 {label}
               </Link>
-              <span className="text-gray-400 text-sm ml-2">{href}</span>
+              <span className="text-zinc-500 text-sm ml-2">{href}</span>
             </li>
           ))}
         </ul>

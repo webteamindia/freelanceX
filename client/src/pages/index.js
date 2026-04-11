@@ -6,8 +6,8 @@ import JoinFreelance from "../components/Landing/JoinFreelance";
 import PopularServices from "../components/Landing/PopularServices";
 import Services from "../components/Landing/Services";
 import React from "react";
-import AuthWrapper from "../components/AuthWrapper";
 import { useStateProvider } from "../context/StateContext";
+import AdsenseAd from "../components/AdsenseAd";
 
 const Index = () => {
   const [{ showLoginModal, showSignupModal }] = useStateProvider();
@@ -16,13 +16,14 @@ const Index = () => {
       <HeroBanner />
       <Companies />
       <PopularServices />
+      <AdsenseAd
+        slot={process.env.NEXT_PUBLIC_ADSENSE_HOME_SLOT}
+        className="mx-4 md:mx-32 my-8"
+      />
       <Everything />
       <Services />
       <Business />
       <JoinFreelance />
-      {(showLoginModal || showSignupModal) && (
-        <AuthWrapper type={showLoginModal ? "login" : "signup"} />
-      )}
     </div>
   );
 };

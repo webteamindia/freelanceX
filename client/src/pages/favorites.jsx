@@ -31,37 +31,37 @@ const FavoritesPage = () => {
     fetchFavorites();
   }, []);
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-5xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Saved gigs
+    <div className="min-h-screen pt-10 px-6 md:px-0 pb-20">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-outfit font-bold text-white tracking-tight">
+            Saved <span className="text-primary">gigs</span>
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-base text-zinc-400 font-inter mt-2">
             Keep track of gigs you love and come back to them anytime.
           </p>
         </header>
 
         {loading ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
-            <p className="text-sm">Loading your favorites...</p>
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-12 text-center text-zinc-400 shadow-lg backdrop-blur-sm">
+            <p className="text-base font-inter">Loading your favorites...</p>
           </div>
         ) : error ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center text-red-600">
-            <p className="text-sm">{error}</p>
+          <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-12 text-center text-red-500 shadow-lg">
+            <p className="text-base font-inter font-medium">{error}</p>
           </div>
         ) : gigs.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
-            <p className="mb-2 font-medium text-gray-700">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-16 text-center shadow-lg backdrop-blur-sm flex flex-col items-center justify-center">
+            <p className="mb-4 text-xl font-medium text-white font-outfit">
               You haven&apos;t saved any gigs yet.
             </p>
-            <p className="text-sm">
+            <p className="text-base text-zinc-400 font-inter max-w-md">
               Browse freelance services and click the heart icon on any gig to
               save it here for later.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {gigs.map((gig) => (
               <SearchGridItem key={gig.id} gig={gig} />
             ))}

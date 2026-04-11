@@ -5,21 +5,23 @@ import router from "next/router";
 
 const Services = () => {
   return (
-    <div className="px-2 md:px-24 py-6 md:py-12">
-      <h2 className="text-2xl md:text-4xl mb-3 md:mb-5 text-[#404145] font-bold">
-        You need it, we've got it
+    <div className="px-6 md:px-24 py-16 md:py-24">
+      <h2 className="text-3xl md:text-5xl font-outfit mb-10 md:mb-14 text-white font-bold tracking-tight">
+        You need it, <span className="text-gradient">we've got it</span>
       </h2>
-      <ul className="grid grid-cols-2 md:grid-cols-5">
+      <ul className="grid grid-cols-2 md:grid-cols-5 gap-6">
         {categories.map(({ name, logo }) => (
           <li
             key={name}
-            className="flex flex-col justify-center items-center cursor-pointer hover:shadow-2xl hover:border-[#1DBF73] border-2 border-transparent p-5 transition-all duration-500 rounded-lg"
+            className="flex flex-col justify-center items-center cursor-pointer bg-zinc-900/40 hover:bg-zinc-800/60 backdrop-blur-sm border border-zinc-800 hover:border-primary p-8 transition-all duration-300 rounded-[1.5rem] hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(29,191,115,0.15)] group"
             onClick={() =>
               router.push(`/search?category=${name.toLowerCase()}`)
             }
           >
-            <Image src={logo} alt="category" height={50} width={50} />
-            <span>{name}</span>
+            <div className="relative h-16 w-16 mb-4 group-hover:scale-110 transition-transform duration-300">
+              <Image src={logo} alt="category" fill className="object-contain filter invert opacity-80 group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(29,191,115,0.8)]" />
+            </div>
+            <span className="text-zinc-300 font-medium text-center font-inter group-hover:text-white transition-colors">{name}</span>
           </li>
         ))}
       </ul>

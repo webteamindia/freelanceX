@@ -43,9 +43,9 @@ function UnreadMessages() {
   return (
     <div className="min-h-[80vh] my-10 mt-0 px-32">
       <h3 className="m-5 text-2xl font-semibold">All your Unread Messages</h3>
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <div className="relative overflow-x-auto shadow-[0_10px_30px_rgba(0,0,0,0.4)] sm:rounded-2xl">
+        <table className="w-full text-sm text-left text-zinc-400 dark:text-zinc-500">
+          <thead className="text-xs text-zinc-300 uppercase bg-background dark:bg-zinc-700 dark:text-zinc-500">
             <tr>
               <th scope="col" className="px-6 py-3">
                 Text
@@ -68,7 +68,7 @@ function UnreadMessages() {
             {messages.map((message) => {
               return (
                 <tr
-                  className="bg-white dark:bg-gray-800 hover:bg-gray-50"
+                  className="bg-zinc-900 border border-zinc-800 dark:bg-zinc-800 hover:bg-zinc-800"
                   key={message.text}
                 >
                   <th scope="row" className="px-6 py-4 ">

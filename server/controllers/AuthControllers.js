@@ -9,7 +9,7 @@ import { sendMail } from "../utils/mailer.js";
 const maxAge = 3 * 24 * 60 * 60;
 
 const generateToken = (email, userId) => {
-  return jwt.sign({ email, userId }, process.env.JWT_SECRET, {
+  return jwt.sign({ email, userId: String(userId) }, process.env.JWT_SECRET, {
     expiresIn: maxAge,
   });
 };
@@ -48,9 +48,15 @@ export const getUserInfo = async (req, res, next) => {
     if (!req.userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: req.userId },
     });
+    // Fallback for tokens where userId cannot be resolved but email exists.
+    if (!user && req.userEmail) {
+      user = await prisma.user.findUnique({
+        where: { email: req.userEmail },
+      });
+    }
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -64,14 +70,29 @@ export const getUserInfo = async (req, res, next) => {
 
 export const setUserInfo = async (req, res, next) => {
   try {
-    if (req?.userId) {
+    if (req?.userId || req?.userEmail) {
+      let currentUser = null;
+      if (req.userId) {
+        currentUser = await prisma.user.findUnique({
+          where: { id: req.userId },
+        });
+      }
+      if (!currentUser && req.userEmail) {
+        currentUser = await prisma.user.findUnique({
+          where: { email: req.userEmail },
+        });
+      }
+      if (!currentUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
       const { userName, fullName, description } = req.body;
       if (userName && fullName && description) {
         // Check if username is used by a different user
         const userNameValid = await prisma.user.findFirst({
           where: {
             username: userName,
-            NOT: { id: req.userId },
+            NOT: { id: currentUser.id },
           },
         });
         if (userNameValid) {
@@ -79,7 +100,7 @@ export const setUserInfo = async (req, res, next) => {
         }
 
         await prisma.user.update({
-          where: { id: req.userId },
+          where: { id: currentUser.id },
           data: {
             username: userName,
             fullName,
@@ -214,6 +235,89 @@ export const resetPassword = async (req, res, next) => {
     });
 
     return res.status(200).json({ message: "Password updated successfully." });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const oauthGoogle = async (req, res, next) => {
+  try {
+    const { email, name } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    let user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      const baseUsername =
+        (email.split("@")[0] || "user").replace(/[^a-zA-Z0-9]/g, "") || "user";
+      let usernameCandidate = `${baseUsername}ff`;
+      let suffix = 1;
+
+      // Ensure username uniqueness
+      while (
+        await prisma.user.findFirst({ where: { username: usernameCandidate } })
+      ) {
+        usernameCandidate = `${baseUsername}ff${suffix}`;
+        suffix += 1;
+      }
+
+      const generatedPassword = await generatePassword(
+        crypto.randomBytes(24).toString("hex")
+      );
+
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: generatedPassword,
+          username: usernameCandidate,
+          fullName: name || null,
+          isProfileInfoSet: !!name,
+        },
+      });
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).json({ message: "Your account is deactivated." });
+    }
+
+    return res.status(200).json({
+      user: { id: user.id, email: user.email },
+      jwt: generateToken(user.email, user.id),
+      message: "Google auth successful",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getPublicProfile = async (req, res, next) => {
+  try {
+    const { username } = req.params;
+    if (!username) {
+      return res.status(400).json({ message: "Username is required" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { username },
+      include: {
+        gigs: {
+          include: {
+            reviews: true,
+          }
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
+
+    const { password, isAdmin, passwordResets, ...publicInfo } = user;
+    return res.status(200).json({ profile: publicInfo });
   } catch (err) {
     next(err);
   }

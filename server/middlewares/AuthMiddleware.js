@@ -6,8 +6,8 @@ export const verifyToken = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET, async (err, payload) => {
     if (err) return res.status(403).send("Invalid token");
-    // console.log(payload);
     req.userId = payload?.userId;
+    req.userEmail = payload?.email;
     next();
   });
 };

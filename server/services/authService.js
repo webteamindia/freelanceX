@@ -48,6 +48,10 @@ export const loginUser = async ({ email, password }) => {
       throw new AppError(400, "User not found.");
     }
 
+    if (user.isActive === false) {
+      throw new AppError(403, "Your account is deactivated.");
+    }
+
     const auth = await compare(password, user.password);
 
     if (!auth) {

@@ -19,46 +19,46 @@ const HowItWorksPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
+    <div className="min-h-screen bg-background px-4 py-10">
       <div className="max-w-4xl mx-auto space-y-12">
         <header className="text-center">
-          <h1 className="text-3xl font-semibold text-gray-900">
+          <h1 className="text-3xl font-semibold text-white">
             How ffiver works
           </h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-zinc-400 mt-2">
             Whether you&apos;re buying or selling, here&apos;s the flow.
           </p>
         </header>
 
-        <section className="bg-white rounded-lg shadow-sm p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-lg p-8">
+          <h2 className="text-xl font-semibold text-white mb-4">
             For buyers
           </h2>
-          <ol className="space-y-3 list-decimal list-inside text-gray-700">
+          <ol className="space-y-3 list-decimal list-inside text-zinc-300">
             {buyerSteps.map((step, i) => (
               <li key={i}>{step}</li>
             ))}
           </ol>
           <Link
             href="/search"
-            className="inline-block mt-4 text-[#1DBF73] font-medium hover:underline"
+            className="inline-block mt-4 text-primary font-medium hover:underline"
           >
             Browse services →
           </Link>
         </section>
 
-        <section className="bg-white rounded-lg shadow-sm p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-lg p-8">
+          <h2 className="text-xl font-semibold text-white mb-4">
             For sellers
           </h2>
-          <ol className="space-y-3 list-decimal list-inside text-gray-700">
+          <ol className="space-y-3 list-decimal list-inside text-zinc-300">
             {sellerSteps.map((step, i) => (
               <li key={i}>{step}</li>
             ))}
           </ol>
           <Link
             href="/seller/gigs/create"
-            className="inline-block mt-4 text-[#1DBF73] font-medium hover:underline"
+            className="inline-block mt-4 text-primary font-medium hover:underline"
           >
             Create your first gig →
           </Link>

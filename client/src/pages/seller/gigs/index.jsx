@@ -28,9 +28,9 @@ const index = () => {
   return (
     <div className="min-h-[80vh] my-10 mt-0 px-32 ">
       <h3 className="m-5 text-3xl font-semibold"> All Your Gigs</h3>
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <div className="relative overflow-x-auto shadow-[0_10px_30px_rgba(0,0,0,0.4)] sm:rounded-2xl">
+        <table className="w-full text-sm text-left text-zinc-400 dark:text-zinc-500">
+          <thead className="text-xs text-zinc-300 uppercase bg-background dark:bg-zinc-700 dark:text-zinc-500">
             <tr>
               <th scope="col" className="px-6 py-3">
                 Title
@@ -52,10 +52,10 @@ const index = () => {
           <tbody>
             {gigs.map(({ title, category, deliveryTime, price, id }) => {
               return (
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <tr className="bg-zinc-900 border border-zinc-800 border-b dark:bg-zinc-800 dark:border-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600">
                   <th
                     scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                    className="px-6 py-4 font-medium text-white whitespace-nowrap dark:text-white"
                   >
                     {title}
                   </th>

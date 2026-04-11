@@ -58,12 +58,12 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 shadow-[0_10px_30px_rgba(0,0,0,0.4)] rounded-2xl p-8">
+        <h1 className="text-2xl font-semibold text-white mb-2">
           Set a new password
         </h1>
-        <p className="text-sm text-gray-500 mb-3">
+        <p className="text-sm text-zinc-400 mb-3">
           Enter and confirm your new password for your ffiver account.
         </p>
         {error && (
@@ -80,7 +80,7 @@ const ResetPasswordPage = () => {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-zinc-300 mb-1"
             >
               New password
             </label>
@@ -89,13 +89,13 @@ const ResetPasswordPage = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all font-inter"
             />
           </div>
           <div>
             <label
               htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-zinc-300 mb-1"
             >
               Confirm password
             </label>
@@ -104,12 +104,12 @@ const ResetPasswordPage = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all font-inter"
             />
           </div>
           <button
             type="submit"
-            className="w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#1DBF73] hover:bg-[#17a864] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1DBF73] disabled:opacity-60"
+            className="w-full flex justify-center py-3 px-4 border border-transparent text-lg font-outfit font-semibold rounded-xl text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-60 transition-all duration-300 hover:shadow-[0_0_20px_rgba(29,191,115,0.4)]"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Updating..." : "Update password"}

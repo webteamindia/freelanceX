@@ -83,13 +83,13 @@ const create = () => {
   };
 
   const inputClassName =
-    "block p-4 w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50  focus:ring-blue-500 focus:border-blue-500";
-  const labelClassName = "mb-2 text-lg font-medium text-gray-900";
+    "block p-4 w-full text-sm text-white border border-zinc-700 rounded-2xl bg-background  focus:ring-primary focus:border-primary";
+  const labelClassName = "mb-2 text-lg font-medium text-white";
 
   return (
     <div className="min-h-[80vh] my-10 mt-0 px-32">
-      <h1 className="text-6xl text-gray-900 mb-5">Create a new Gig</h1>
-      <h3 className="text-3xl text-gray-900 mb-5">
+      <h1 className="text-6xl text-white mb-5">Create a new Gig</h1>
+      <h3 className="text-3xl text-white mb-5">
         Enter the details to create the gig
       </h3>
       <form className="flex flex-col gap-5 mt-10">
@@ -116,7 +116,7 @@ const create = () => {
             <select
               name="category"
               id="category"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-4"
+              className="bg-background border border-zinc-700 text-white text-sm rounded-2xl focus:ring-primary focus:border-primary block w-full p-4"
               onChange={handleChange}
               defaultValue="Choose a Category"
             >
@@ -135,7 +135,7 @@ const create = () => {
           <textarea
             name="description"
             id="description"
-            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+            className="block p-2.5 w-full text-sm text-white bg-background rounded-2xl border border-zinc-700 focus:ring-primary focus:border-primary"
             placeholder="Write a short description"
             value={data.description}
             onChange={handleChange}
@@ -199,7 +199,7 @@ const create = () => {
                 return (
                   <li
                     key={feature + index.toString()}
-                    className="flex gap-2 items-center py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-red-700 cursor-pointer hover:border-red-200"
+                    className="flex gap-2 items-center py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-white focus:outline-none bg-zinc-900 border border-zinc-800 rounded-2xl border border-zinc-800/60 hover:bg-zinc-800/80 hover:text-red-700 cursor-pointer hover:border-red-200"
                   >
                     <span>{feature}</span>
                     <span
@@ -254,7 +254,7 @@ const create = () => {
         </div>
         <div>
           <button
-            className="border   text-lg font-semibold px-5 py-3   border-[#1DBF73] bg-[#1DBF73] text-white rounded-md"
+            className="border   text-lg font-semibold px-5 py-3   border-primary bg-primary text-white rounded-md"
             type="button"
             onClick={addGig}
           >

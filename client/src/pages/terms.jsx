@@ -2,19 +2,19 @@ import React from "react";
 
 const TermsPage = () => {
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8 space-y-6">
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 shadow-[0_10px_30px_rgba(0,0,0,0.4)] rounded-2xl p-8 space-y-6">
         <header>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <h1 className="text-2xl font-semibold text-white">
             Terms of Service
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-zinc-400 mt-1">
             Last updated: {new Date().getFullYear()}
           </p>
         </header>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">1. Overview</h2>
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">1. Overview</h2>
           <p>
             These Terms of Service (&quot;Terms&quot;) govern your use of the ffiver
             platform and services (collectively, the &quot;Platform&quot;). By creating
@@ -23,8 +23,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             2. Accounts &amp; eligibility
           </h2>
           <p>
@@ -35,8 +35,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             3. Use of the Platform
           </h2>
           <p>
@@ -48,8 +48,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             4. Buyer and seller relationships
           </h2>
           <p>
@@ -60,8 +60,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">5. Payments</h2>
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">5. Payments</h2>
           <p>
             Payments for orders are processed through our payment partners.
             Buyers are charged the full order amount at checkout. ffiver holds
@@ -72,8 +72,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             6. Cancellations, refunds &amp; disputes
           </h2>
           <p>
@@ -86,8 +86,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             7. Intellectual property
           </h2>
           <p>
@@ -99,8 +99,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             8. Termination &amp; account suspension
           </h2>
           <p>
@@ -110,8 +110,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             9. Limitation of liability
           </h2>
           <p>
@@ -122,8 +122,8 @@ const TermsPage = () => {
           </p>
         </section>
 
-        <section className="space-y-2 text-sm text-gray-700">
-          <h2 className="text-lg font-medium text-gray-900">
+        <section className="space-y-2 text-sm text-zinc-300">
+          <h2 className="text-lg font-medium text-white">
             10. Changes to these Terms
           </h2>
           <p>

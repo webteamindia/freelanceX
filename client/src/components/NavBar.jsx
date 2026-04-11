@@ -25,29 +25,11 @@ const NavBar = () => {
     useStateProvider();
 
   const handleLogin = () => {
-    if (showSignupModal) {
-      dispatch({
-        type: reducerCases.TOGGLE_SIGNUP_MODAL,
-        showSignupModal: false,
-      });
-    }
-    dispatch({
-      type: reducerCases.TOGGLE_LOGIN_MODAL,
-      showLoginModal: true,
-    });
+    router.push("/login");
   };
 
   const handleSignup = () => {
-    if (showLoginModal) {
-      dispatch({
-        type: reducerCases.TOGGLE_LOGIN_MODAL,
-        showLoginModal: false,
-      });
-    }
-    dispatch({
-      type: reducerCases.TOGGLE_SIGNUP_MODAL,
-      showSignupModal: true,
-    });
+    router.push("/signup");
   };
 
   useEffect(() => {
@@ -74,9 +56,11 @@ const NavBar = () => {
   }, [isOpen]);
 
   const links = [
-    { linkName: "X Business", handler: "#", type: "link" },
-    { linkName: "Explore", handler: "#", type: "link" },
-    { linkName: "Become a Seller", handler: "#", type: "link" },
+    { linkName: "How it works", handler: "/how-it-works", type: "link" },
+    { linkName: "Explore", handler: "/search", type: "link" },
+    { linkName: "Pricing", handler: "/pricing", type: "link" },
+    { linkName: "Become a Seller", handler: "/seller", type: "link" },
+    { linkName: "Contact", handler: "/contact", type: "link" },
     ...(process.env.NODE_ENV === "development"
       ? [
           {
@@ -183,6 +167,34 @@ const NavBar = () => {
       },
     },
     {
+      name: "Saved gigs",
+      callback: (e) => {
+        e.stopPropagation();
+        setIsContextMenuVisible(false);
+        router.push("/favorites");
+      },
+    },
+    {
+      name: "Help",
+      callback: (e) => {
+        e.stopPropagation();
+        setIsContextMenuVisible(false);
+        router.push("/help");
+      },
+    },
+    ...(userInfo?.isAdmin
+      ? [
+          {
+            name: "Admin",
+            callback: (e) => {
+              e.stopPropagation();
+              setIsContextMenuVisible(false);
+              router.push("/admin");
+            },
+          },
+        ]
+      : []),
+    {
       name: "Logout",
       callback: (e) => {
         e.stopPropagation();
@@ -197,22 +209,18 @@ const NavBar = () => {
       {isLoaded && (
         <>
           <nav
-            className={`w-full px-4 md:px-10 flex justify-between items-center py-4 top-0 z-30 transition-all duration-300 ${
+            className={`w-full px-6 md:px-12 lg:px-20 flex justify-between items-center py-4 top-0 z-30 transition-all duration-500 ${
               navFixed || userInfo
-                ? "fixed bg-white border-b border-gray-200"
+                ? "fixed bg-zinc-950/80 backdrop-blur-2xl border-b border-white/5 shadow-sm"
                 : "absolute bg-transparent border-transparent"
             }`}
           >
             <div className="flex items-center">
               <Link href="/">
-                <p
-                  className={
-                    !navFixed && !userInfo ? "text-[#fff]" : "text-[#404145]"
-                  }
-                >
-                  <span className="text-2xl md:text-3xl font-semibold flex items-center">
-                    <b className="text-green-700 text-3xl md:text-4xl">ff</b>
-                    <span className="text-2xl md:text-3xl font-semibold ml-1">
+                <p className="text-white font-outfit">
+                  <span className="text-2xl md:text-3xl font-bold flex items-center tracking-tighter">
+                    <b className="text-primary text-3xl md:text-4xl">ff</b>
+                    <span className="text-2xl md:text-3xl font-bold ml-1">
                       iver
                     </span>
                   </span>
@@ -221,19 +229,25 @@ const NavBar = () => {
             </div>
 
             <div
-              className={`hidden lg:flex ${
-                navFixed || userInfo ? "opacity-100" : "opacity-0"
+              className={`hidden lg:flex items-center w-[36rem] transition-all duration-500 transform ${
+                navFixed || userInfo ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
               }`}
             >
               <input
                 type="text"
-                className="w-[30rem] py-2.5 px-4 border border-gray-300"
+                className="w-full py-3 px-6 border border-zinc-800 bg-zinc-900 text-white rounded-l-2xl font-inter focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder:text-zinc-500"
                 value={searchData}
                 onChange={(e) => setSearchData(e.target.value)}
                 placeholder="What service are you looking for today?"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setSearchData("");
+                    router.push(`/search?q=${searchData}`);
+                  }
+                }}
               />
               <button
-                className="bg-gray-900 py-1.5 text-white w-16 flex justify-center items-center"
+                className="bg-primary hover:bg-primary-hover py-3 text-white w-16 h-full flex justify-center items-center rounded-r-2xl transition-all duration-300 shadow-[0_4px_14px_rgba(29,191,115,0.2)] hover:shadow-[0_6px_20px_rgba(29,191,115,0.4)] border border-primary hover:border-primary-hover"
                 onClick={() => {
                   setSearchData("");
                   router.push(`/search?q=${searchData}`);
@@ -245,28 +259,22 @@ const NavBar = () => {
 
             <div className="hidden md:block">
               {!userInfo ? (
-                <ul className="flex gap-6 items-center">
+                <ul className="flex gap-8 items-center">
                   {links.map(({ linkName, handler, type }) => (
                     <li
                       key={linkName}
-                      className={`${
-                        navFixed ? "text-black " : "text-white"
-                      } font-medium hover:text-[#2ae68e] transition-all duration-300`}
+                      className={`text-zinc-300 font-inter font-medium hover:text-white transition-all duration-200`}
                     >
                       {type === "link" && (
-                        <Link href={handler}>{linkName}</Link>
+                        <Link href={handler} className="hover:text-primary transition-colors">{linkName}</Link>
                       )}
                       {type === "button" && (
-                        <button onClick={handler}>{linkName}</button>
+                        <button onClick={handler} className="hover:text-primary transition-colors">{linkName}</button>
                       )}
                       {type === "button2" && (
                         <button
                           onClick={handler}
-                          className={`border text-md font-semibold py-1 px-6 rounded-sm ${
-                            navFixed
-                              ? "border-[#1DBF73] text-[#1DBF73]"
-                              : "border-white text-white"
-                          } hover:bg-[#1DBF73] hover:text-white hover:border-[#1DBF73] transition-all duration-300`}
+                          className={`border-2 text-md font-outfit font-semibold py-2 px-6 rounded-xl border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 hover:shadow-[0_0_20px_rgba(29,191,115,0.4)] ml-2`}
                         >
                           {linkName}
                         </button>
@@ -275,34 +283,50 @@ const NavBar = () => {
                   ))}
                 </ul>
               ) : (
-                <ul className="flex gap-10 items-center">
+                <ul className="flex gap-10 items-center text-sm font-inter">
                   {process.env.NODE_ENV === "development" && (
-                    <li className="font-medium text-gray-500">
-                      <Link href="/dev" className="hover:text-[#1DBF73]">
+                    <li className="font-medium text-zinc-400">
+                      <Link href="/dev" className="hover:text-primary transition-colors">
                         Dev
                       </Link>
                     </li>
                   )}
                   {isSeller && (
                     <li
-                      className="cursor-pointer text-[#1DBF73] font-medium"
+                      className="cursor-pointer text-primary hover:text-primary-hover transition-colors font-medium"
                       onClick={() => router.push("/seller/gigs/create")}
                     >
                       Create Gig
                     </li>
                   )}
                   <li
-                    className="cursor-pointer text-[#1DBF73] font-medium"
+                    className="cursor-pointer text-primary hover:text-primary-hover transition-colors font-medium"
                     onClick={handleOrdersNavigate}
                   >
                     Orders
                   </li>
                   <li
-                    className="cursor-pointer font-medium"
+                    className="cursor-pointer text-primary hover:text-primary-hover transition-colors font-medium"
+                    onClick={() => router.push("/favorites")}
+                  >
+                    Saved
+                  </li>
+                  <li className="font-medium text-zinc-300 hover:text-white transition-colors">
+                    <Link href="/contact" className="hover:text-primary transition-colors">
+                      Contact
+                    </Link>
+                  </li>
+                  <li
+                    className="cursor-pointer text-zinc-300 hover:text-white transition-colors font-medium"
                     onClick={handleModeSwitch}
                   >
                     {isSeller ? "Switch To Buyer" : "Switch To Seller"}
                   </li>
+                  {userInfo?.isAdmin && (
+                    <li className="cursor-pointer font-medium">
+                      <Link href="/admin">Admin</Link>
+                    </li>
+                  )}
                   <li
                     className="cursor-pointer"
                     onClick={(e) => {
@@ -312,16 +336,17 @@ const NavBar = () => {
                     title="Profile"
                   >
                     {userInfo?.imageName ? (
-                      <Image
-                        src={userInfo.imageName}
-                        alt="Profile"
-                        width={40}
-                        height={40}
-                        className="rounded-full"
-                      />
+                      <div className="relative h-10 w-10 rounded-full border border-zinc-800 shadow-md hover:shadow-[0_0_15px_rgba(29,191,115,0.3)] transition-all overflow-hidden">
+                        <Image
+                          src={userInfo.imageName}
+                          alt="Profile"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     ) : (
-                      <div className="bg-purple-500 h-10 w-10 flex items-center justify-center rounded-full relative">
-                        <span className="text-xl text-white">
+                      <div className="bg-primary hover:bg-primary-hover transition-colors h-10 w-10 flex items-center justify-center rounded-full relative shadow-md hover:shadow-[0_0_15px_rgba(29,191,115,0.4)]">
+                        <span className="text-xl font-bold font-outfit text-white">
                           {userInfo &&
                             userInfo?.email &&
                             userInfo?.email.split("")[0].toUpperCase()}
@@ -336,9 +361,7 @@ const NavBar = () => {
             <div className="md:hidden">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`${
-                  !navFixed && !userInfo ? "text-white" : "text-black"
-                } p-2 z-50 relative`}
+                className={`text-white p-2 z-50 relative`}
               >
                 {isOpen ? (
                   <RiCloseLine className="h-6 w-6" />
@@ -357,60 +380,66 @@ const NavBar = () => {
 
           <div
             ref={mobileMenuRef}
-            className={`fixed top-0 right-0 h-full w-[80%] max-w-sm bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:hidden px-4 ${
+            className={`fixed top-0 right-0 h-full w-[80%] max-w-sm bg-zinc-950 border-l border-zinc-800 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden px-6 ${
               isOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
             <button
-              className="absolute right-4 top-6"
+              className="absolute right-6 top-6 text-zinc-400 hover:text-primary transition-colors"
               onClick={() => setIsOpen(false)}
             >
-              <RxCross1 size={32} />
+              <RxCross1 size={28} />
             </button>
-            <div className="h-full flex flex-col pt-20">
-              <div className=" border-b">
+            <div className="h-full flex flex-col pt-24">
+              <div className="pb-6 border-b border-zinc-800">
                 <div className="flex">
                   <input
                     type="text"
-                    className="flex-1 p-2 border border-gray-300 rounded-l"
+                    className="flex-1 p-3 border border-zinc-700 bg-zinc-900 focus:outline-none focus:border-primary text-white rounded-l-xl font-inter placeholder:text-zinc-500"
                     placeholder="Search..."
                     value={searchData}
                     onChange={(e) => setSearchData(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        router.push(`/search?q=${searchData}`);
+                        setIsOpen(false);
+                      }
+                    }}
                   />
                   <button
-                    className="px-4 bg-gray-900 text-white rounded-r"
+                    className="px-5 bg-primary hover:bg-primary-hover text-white rounded-r-xl transition-colors"
                     onClick={() => {
                       router.push(`/search?q=${searchData}`);
                       setIsOpen(false);
                     }}
                   >
-                    <IoSearchOutline className="h-5 w-5" />
+                    <IoSearchOutline className="h-6 w-6" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto mt-4 hide-scrollbar">
                 {!userInfo ? (
-                  <div className="py-4 flex flex-col items-center">
+                  <div className="py-4 flex flex-col items-start gap-4 font-inter">
                     {links.map(({ linkName, handler, type }) => (
                       <div
                         key={linkName}
-                        className="w-full text-center py-3 hover:bg-gray-100"
+                        className="w-full"
                         onClick={() => {
-                          if (typeof handler === "function") handler();
+                          if (typeof handler === "function" && type !== "button2") handler();
                           setIsOpen(false);
                         }}
                       >
                         {type === "link" && (
-                          <Link href={handler} className="block">
+                          <Link href={handler} className="block w-full text-zinc-300 hover:text-primary text-lg font-medium transition-colors">
                             {linkName}
                           </Link>
                         )}
                         {type === "button" && (
-                          <button className="w-full">{linkName}</button>
+                          <button className="w-full text-left text-zinc-300 hover:text-primary text-lg font-medium transition-colors" onClick={handler}>{linkName}</button>
                         )}
                         {type === "button2" && (
-                          <button className="w-full py-2 px-6 border border-[#1DBF73] text-[#1DBF73] hover:bg-[#1DBF73] hover:text-white rounded-sm transition-all duration-300">
+                          <button onClick={handler} className="w-full py-3 mt-4 text-center border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-xl font-semibold transition-all duration-300 text-lg">
                             {linkName}
                           </button>
                         )}
@@ -418,10 +447,10 @@ const NavBar = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="py-4 flex flex-col items-center">
+                  <div className="py-4 flex flex-col items-start gap-5 font-inter">
                     {isSeller && (
                       <div
-                        className="w-full text-center py-3 hover:bg-gray-100"
+                        className="w-full text-left text-primary hover:text-primary-hover font-medium text-lg cursor-pointer transition-colors"
                         onClick={() => {
                           router.push("/seller/gigs/create");
                           setIsOpen(false);
@@ -431,7 +460,7 @@ const NavBar = () => {
                       </div>
                     )}
                     <div
-                      className="w-full text-center py-3 hover:bg-gray-100"
+                      className="w-full text-left text-primary hover:text-primary-hover font-medium text-lg cursor-pointer transition-colors"
                       onClick={() => {
                         handleOrdersNavigate();
                         setIsOpen(false);
@@ -440,7 +469,25 @@ const NavBar = () => {
                       Orders
                     </div>
                     <div
-                      className="w-full text-center py-3 hover:bg-gray-100"
+                      className="w-full text-left text-zinc-300 hover:text-primary font-medium text-lg cursor-pointer transition-colors"
+                      onClick={() => {
+                        router.push("/favorites");
+                        setIsOpen(false);
+                      }}
+                    >
+                      Saved gigs
+                    </div>
+                    <div
+                      className="w-full text-left text-zinc-300 hover:text-primary font-medium text-lg cursor-pointer transition-colors"
+                      onClick={() => {
+                        router.push("/contact");
+                        setIsOpen(false);
+                      }}
+                    >
+                      Contact
+                    </div>
+                    <div
+                      className="w-full text-left text-zinc-300 hover:text-white font-medium text-lg cursor-pointer transition-colors"
                       onClick={() => {
                         handleModeSwitch();
                         setIsOpen(false);
@@ -448,8 +495,9 @@ const NavBar = () => {
                     >
                       {isSeller ? "Switch To Buyer" : "Switch To Seller"}
                     </div>
+                    <div className="w-full h-px bg-zinc-800 my-2"></div>
                     <div
-                      className="w-full text-center py-3 hover:bg-gray-100"
+                      className="w-full text-left text-zinc-300 hover:text-primary font-medium text-lg cursor-pointer transition-colors"
                       onClick={() => {
                         router.push("/profile");
                         setIsOpen(false);
@@ -457,9 +505,29 @@ const NavBar = () => {
                     >
                       Profile
                     </div>
+                    <div
+                      className="w-full text-left text-zinc-300 hover:text-primary font-medium text-lg cursor-pointer transition-colors"
+                      onClick={() => {
+                        router.push("/help");
+                        setIsOpen(false);
+                      }}
+                    >
+                      Help
+                    </div>
+                    {userInfo?.isAdmin && (
+                      <div
+                        className="w-full text-left text-zinc-300 hover:text-primary font-medium text-lg cursor-pointer transition-colors"
+                        onClick={() => {
+                          router.push("/admin");
+                          setIsOpen(false);
+                        }}
+                      >
+                        Admin Panel
+                      </div>
+                    )}
                     {process.env.NODE_ENV === "development" && (
                       <div
-                        className="w-full text-center py-3 hover:bg-gray-100"
+                        className="w-full text-left text-zinc-500 hover:text-primary font-medium text-lg cursor-pointer transition-colors"
                         onClick={() => {
                           router.push("/dev");
                           setIsOpen(false);
@@ -469,7 +537,7 @@ const NavBar = () => {
                       </div>
                     )}
                     <div
-                      className="w-full text-center py-3 hover:bg-gray-100"
+                      className="w-full text-left font-medium text-lg cursor-pointer mt-4 py-3 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-xl text-center rounded-sm transition-all duration-300"
                       onClick={() => {
                         router.push("/logout");
                         setIsOpen(false);

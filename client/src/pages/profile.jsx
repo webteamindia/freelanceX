@@ -110,8 +110,8 @@ function Profile() {
   };
 
   const inputClassName =
-    "block p-4 w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50  focus:ring-blue-500 focus:border-blue-500";
-  const labelClassName = "mb-2 text-lg font-medium text-gray-900";
+    "block p-4 w-full text-sm text-white border border-zinc-800 rounded-xl bg-zinc-950 font-inter focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none transition-all";
+  const labelClassName = "mb-2 text-lg font-medium text-zinc-300 font-outfit";
 
   return (
     <>
@@ -122,18 +122,18 @@ function Profile() {
               <span className="text-red-600 font-bold">{errorMessage}</span>
             </div>
           )}
-          <h2 className="text-3xl">Welcome to ffiver 👋 </h2>
-          <h4 className="text-xl">
+          <h2 className="text-4xl font-outfit font-bold text-white mb-2 tracking-tight">Welcome to ffiver 👋 </h2>
+          <h4 className="text-xl text-zinc-400 font-inter mb-6">
             Please complete your profile to get started!
           </h4>
-          <div className="flex flex-col items-center w-full gap-5">
+          <div className="flex flex-col items-center w-full gap-6">
             <div
               className="flex flex-col items-center cursor-pointer"
               onMouseEnter={() => setImageHover(true)}
               onMouseLeave={() => setImageHover(false)}
             >
               <label className={labelClassName}>Select a profile Picture</label>
-              <div className="bg-purple-500 h-36 w-36 flex items-center justify-center rounded-full relative">
+              <div className="bg-primary h-36 w-36 flex items-center justify-center rounded-full relative shadow-[0_0_20px_rgba(29,191,115,0.4)]">
                 {image ? (
                   <Image
                     src={URL.createObjectURL(image)}
@@ -147,7 +147,7 @@ function Profile() {
                   </span>
                 )}
                 <div
-                  className={`absolute bg-slate-400 h-full w-full rounded-full flex items-center justify-center   transition-all duration-100  ${
+                  className={`absolute bg-zinc-900/80 backdrop-blur-sm shadow-inner h-full w-full rounded-full flex items-center justify-center transition-all duration-300 ${
                     imageHover ? "opacity-100" : "opacity-0"
                   }`}
                 >
@@ -222,7 +222,7 @@ function Profile() {
               ></textarea>
             </div>
             <button
-              className="border   text-lg font-semibold px-5 py-3  mb-12 border-[#1DBF73] bg-[#1DBF73] text-white rounded-md"
+              className="border-2 text-lg font-outfit font-semibold px-8 py-3 mt-6 mb-12 border-primary bg-primary text-white rounded-xl transition-all duration-300 hover:bg-transparent hover:text-primary hover:shadow-[0_0_20px_rgba(29,191,115,0.3)]"
               type="button"
               onClick={setProfile}
             >

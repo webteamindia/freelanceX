@@ -4,7 +4,7 @@ import { useCookies } from "react-cookie";
 import { GET_USER_INFO, SET_USER_INFO } from "../../utils/constants";
 
 const inputClassName =
-  "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500";
+  "w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500";
 
 const AccountSettingsPage = () => {
   const [fullName, setFullName] = useState("");
@@ -82,22 +82,22 @@ const AccountSettingsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 px-4 py-10">
-        <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
-          <p className="text-sm text-gray-600">Loading your settings...</p>
+      <div className="min-h-screen bg-background px-4 py-10">
+        <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 shadow-[0_10px_30px_rgba(0,0,0,0.4)] rounded-2xl p-8">
+          <p className="text-sm text-zinc-400">Loading your settings...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8 space-y-8">
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 shadow-[0_10px_30px_rgba(0,0,0,0.4)] rounded-2xl p-8 space-y-8">
         <header>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <h1 className="text-2xl font-semibold text-white">
             Account settings
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-zinc-400 mt-1">
             Manage your personal information, security, and notification
             preferences.
           </p>
@@ -115,12 +115,12 @@ const AccountSettingsPage = () => {
         )}
 
         <section className="space-y-4 border-t pt-6">
-          <h2 className="text-lg font-medium text-gray-900">
+          <h2 className="text-lg font-medium text-white">
             Profile information
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-zinc-300 mb-1">
                 Full name
               </label>
               <input
@@ -132,7 +132,7 @@ const AccountSettingsPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-zinc-300 mb-1">
                 Username
               </label>
               <input
@@ -144,7 +144,7 @@ const AccountSettingsPage = () => {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-zinc-300 mb-1">
                 Bio
               </label>
               <textarea
@@ -159,19 +159,19 @@ const AccountSettingsPage = () => {
         </section>
 
         <section className="space-y-4 border-t pt-6">
-          <h2 className="text-lg font-medium text-gray-900">
+          <h2 className="text-lg font-medium text-white">
             Notifications
           </h2>
           <div className="space-y-2">
             <label className="flex items-center gap-3">
               <input type="checkbox" className="h-4 w-4" />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-zinc-300">
                 Email me about new messages
               </span>
             </label>
             <label className="flex items-center gap-3">
               <input type="checkbox" className="h-4 w-4" />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-zinc-300">
                 Email me about order updates
               </span>
             </label>
@@ -181,7 +181,7 @@ const AccountSettingsPage = () => {
           <button
             type="button"
             onClick={handleSaveProfile}
-            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-[#1DBF73] hover:bg-[#17a864] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1DBF73] disabled:opacity-60"
+            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-primary hover:bg-[#17a864] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1DBF73] disabled:opacity-60"
             disabled={saving}
           >
             {saving ? "Saving..." : "Save changes"}

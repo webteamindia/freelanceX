@@ -3,11 +3,11 @@ import React from "react";
 
 const CheckEmailPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-8 text-center">
-        <div className="h-12 w-12 rounded-full bg-[#1DBF73]/10 flex items-center justify-center mx-auto mb-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 shadow-[0_10px_30px_rgba(0,0,0,0.4)] rounded-2xl p-8 text-center">
+        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <svg
-            className="h-6 w-6 text-[#1DBF73]"
+            className="h-6 w-6 text-primary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -20,17 +20,17 @@ const CheckEmailPage = () => {
             />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">
+        <h1 className="text-xl font-semibold text-white mb-2">
           Check your email
         </h1>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-zinc-400 mb-6">
           We&apos;ve sent you a link to verify your email or reset your
           password. Check your inbox (and spam folder) and click the link to
           continue.
         </p>
         <Link
           href="/"
-          className="inline-block text-[#1DBF73] font-medium hover:underline"
+          className="inline-block text-primary font-medium hover:underline"
         >
           Back to home
         </Link>

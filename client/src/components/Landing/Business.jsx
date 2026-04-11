@@ -11,35 +11,36 @@ const Business = () => {
   ];
 
   return (
-    <div className="bg-[#0d084d] px-5 md:px-32 py-6 md:py-16 flex flex-col md:flex-row gap-10 ">
-      <div className="text-white flex flex-col gap-6 justify-center items-start">
-        <div className="flex gap-2 text-white text-2xl md:text-3xl font-bold items-center">
+    <div className="bg-gradient-to-br from-zinc-950 via-zinc-900 to-background border-y border-zinc-800/50 px-6 md:px-32 py-16 md:py-24 flex flex-col md:flex-row gap-12 md:gap-20 items-center">
+      <div className="text-white flex flex-col gap-8 justify-center items-start md:w-1/2">
+        <div className="flex gap-2 text-white text-3xl md:text-4xl font-bold items-center font-outfit">
           <span>
-            <i>freelance</i>
-            <b className="text-green-500 text-4xl">X</b>
+            <i className="font-medium text-zinc-300">freelance</i>
+            <b className="text-primary text-5xl ml-1">X</b>
           </span>
-          <span className="">Business</span>
+          <span className="tracking-tight">Business</span>
         </div>
-        <h2 className="text-2xl md:text-4xl mb-3 md:mb-5 font-bold">
-          A solution built for business
+        <h2 className="text-3xl md:text-5xl font-outfit font-bold leading-[1.2]">
+          A solution built for <span className="text-gradient">business</span>
         </h2>
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col gap-5 mt-2">
           {features.map((feature) => (
-            <li key={feature} className="flex gap-2 items-center">
-              <BsCheckCircle className="text-green-600 text-2xl" />
-              <span>{feature}</span>
+            <li key={feature} className="flex gap-4 items-center">
+              <BsCheckCircle className="text-primary text-2xl drop-shadow-[0_0_8px_rgba(29,191,115,0.4)]" />
+              <span className="text-zinc-300 font-inter text-lg">{feature}</span>
             </li>
           ))}
         </ul>
         <button
-          className="border-2 text-md font-semibold px-6 py-3 md:mx-4 md:my-4 border-[#1DBF73] bg-[#1DBF73] text-white rounded-md transition-all duration-300 hover:bg-transparent hover:text-[#ffffff]"
+          className="mt-4 border-2 font-semibold px-8 py-4 rounded-xl transition-all duration-300 border-primary bg-primary text-white hover:bg-transparent hover:text-primary hover:shadow-[0_0_20px_rgba(29,191,115,0.3)]"
           type="button"
         >
           Explore XBusiness
         </button>
       </div>
-      <div className="relative w-full h-[280px] md:h-[512px] md:w-1/2">
-        <Image src="/business.png" alt="business" fill />
+      <div className="relative w-full h-[320px] md:h-[512px] md:w-1/2 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-zinc-800">
+        <Image src="/business.png" alt="business" fill className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent pointer-events-none"></div>
       </div>
     </div>
   );

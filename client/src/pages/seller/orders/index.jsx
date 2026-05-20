@@ -8,36 +8,90 @@ import { toast } from "react-toastify";
 import { useStateProvider } from "../../../context/StateContext.jsx";
 import { GET_SELLER_ORDERS } from "../../../utils/constants";
 
-const index = () => {
+const SellerOrdersPage = () => {
   const [cookies] = useCookies();
-
   const [orders, setOrders] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   const [{ userInfo }] = useStateProvider();
 
   useEffect(() => {
     const getOrders = async () => {
+      setLoading(true);
       try {
         const { data } = await axios.get(GET_SELLER_ORDERS, {
           headers: {
             Authorization: `Bearer ${cookies.jwt}`,
           },
         });
-        console.log(data.orders);
-        setOrders(data.orders);
+        setOrders(data.orders || []);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         toast.error("Something went wrong");
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (userInfo) {
+    if (userInfo && cookies.jwt) {
       getOrders();
     }
-  }, [userInfo]);
+  }, [userInfo, cookies.jwt]);
+
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredOrders = orders.filter((order) => {
+    if (!normalizedSearch) return true;
+    const title = order.gig?.title?.toLowerCase() || "";
+    const category = order.gig?.category?.toLowerCase() || "";
+    const buyer = order.buyer?.fullName?.toLowerCase() || "";
+    return (
+      title.includes(normalizedSearch) ||
+      category.includes(normalizedSearch) ||
+      buyer.includes(normalizedSearch)
+    );
+  });
+
+  const totalRevenue = filteredOrders.reduce(
+    (sum, order) => sum + Number(order?.gig?.price || order?.price || 0),
+    0
+  );
 
   return (
-    <div className="min-h-[80vh] my-10 mt-0 px-32 ">
-      <h3 className="m-5 text-3xl font-semibold"> All Your Orders </h3>
+    <div className="min-h-[80vh] my-10 mt-0 px-6 md:px-20">
+      <div className="m-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h3 className="text-3xl font-semibold">Orders on your gigs</h3>
+        <input
+          className="bg-zinc-900 border border-zinc-700 text-zinc-200 rounded-lg px-4 py-2 w-full md:w-80 outline-none focus:border-primary"
+          placeholder="Search by gig, category, or buyer..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      <div className="mx-5 mb-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <p className="text-zinc-400 text-sm">Completed orders</p>
+          <p className="text-2xl font-semibold">{filteredOrders.length}</p>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <p className="text-zinc-400 text-sm">Revenue</p>
+          <p className="text-2xl font-semibold">${totalRevenue.toFixed(2)}</p>
+        </div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <p className="text-zinc-400 text-sm">Unread messages</p>
+          <Link href="/seller/unread-messages" className="text-primary hover:underline">
+            Open inbox
+          </Link>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="mx-5 text-zinc-400">Loading orders...</div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="mx-5 bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-zinc-400">
+          No orders yet. Share your gigs to start receiving orders.
+        </div>
+      ) : (
       <div className="relative overflow-x-auto shadow-[0_10px_30px_rgba(0,0,0,0.4)] sm:rounded-2xl">
         <table className="w-full text-sm text-left text-zinc-200 dark:text-zinc-500">
           <thead className="text-xs text-zinc-200 uppercase bg-background dark:bg-zinc-700 dark:text-zinc-500">
@@ -61,12 +115,15 @@ const index = () => {
                 Order Date
               </th>
               <th scope="col" className="px-6 py-3">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3">
                 Send Message
               </th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => {
+            {filteredOrders.map((order) => {
               return (
                 <tr
                   className="bg-zinc-900 border border-zinc-800 border-b dark:bg-zinc-800 dark:border-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600"
@@ -87,7 +144,7 @@ const index = () => {
                   <td className="px-6 py-4">{order.gig.deliveryTime} days</td>
                   <td className="px-6 py-4 place-items-center ">
                     <Image
-                      src={order.buyer.profileImage}
+                      src={order.buyer.profileImage || "/default_profile.png"}
                       alt={order.buyer.username}
                       width={30}
                       height={30}
@@ -97,9 +154,14 @@ const index = () => {
                   </td>
                   <td className="px-6 py-4">{order.createdAt.split("T")[0]}</td>
                   <td className="px-6 py-4">
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium">
+                      Paid
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
                     <Link
                       className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                      href={`/buyer/orders/messages/${order.id}`}
+                      href={`/seller/orders/messages/${order.id}`}
                     >
                       <SiGooglemessages fill="green" size={30} />
                     </Link>
@@ -110,8 +172,9 @@ const index = () => {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };
 
-export default index;
+export default SellerOrdersPage;

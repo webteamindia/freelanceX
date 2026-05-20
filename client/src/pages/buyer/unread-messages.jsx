@@ -1,16 +1,16 @@
 import { useStateProvider } from "../../context/StateContext";
 import { GET_UNREAD_MESSAGES, MARK_AS_READ_ROUTE } from "../../utils/constants";
 import { useCookies } from "react-cookie";
-
 import axios from "axios";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-function UnreadMessages() {
+function BuyerUnreadMessages() {
   const [cookies] = useCookies();
   const [{ userInfo }] = useStateProvider();
   const [messages, setMessages] = useState([]);
+
   useEffect(() => {
     const getUnreadMessages = async () => {
       try {
@@ -27,6 +27,7 @@ function UnreadMessages() {
         toast.error("Could not load unread messages.");
       }
     };
+
     if (userInfo && cookies.jwt) {
       getUnreadMessages();
     }
@@ -43,6 +44,7 @@ function UnreadMessages() {
           },
         }
       );
+
       if (response.status === 200) {
         setMessages((prev) => prev.filter((message) => message.id !== id));
       }
@@ -53,8 +55,8 @@ function UnreadMessages() {
   };
 
   return (
-    <div className="min-h-[80vh] my-10 mt-0 px-32">
-      <h3 className="m-5 text-2xl font-semibold">All your Unread Messages</h3>
+    <div className="min-h-[80vh] my-10 mt-0 px-6 md:px-20">
+      <h3 className="m-5 text-2xl font-semibold">Unread Messages</h3>
       <div className="relative overflow-x-auto shadow-[0_10px_30px_rgba(0,0,0,0.4)] sm:rounded-2xl">
         <table className="w-full text-sm text-left text-zinc-400 dark:text-zinc-500">
           <thead className="text-xs text-zinc-300 uppercase bg-background dark:bg-zinc-700 dark:text-zinc-500">
@@ -99,15 +101,15 @@ function UnreadMessages() {
                         e.preventDefault();
                         markAsRead(message.id);
                       }}
-                      className="font-medium text-blue-600  hover:underline"
+                      className="font-medium text-blue-600 hover:underline"
                     >
                       Mark as Read
                     </Link>
                   </td>
                   <td className="px-6 py-4 ">
                     <Link
-                      href={`/seller/orders/messages/${message.orderId}`}
-                      className="font-medium text-blue-600  hover:underline"
+                      href={`/buyer/orders/messages/${message.orderId}`}
+                      className="font-medium text-blue-600 hover:underline"
                     >
                       View
                     </Link>
@@ -122,4 +124,4 @@ function UnreadMessages() {
   );
 }
 
-export default UnreadMessages;
+export default BuyerUnreadMessages;

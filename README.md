@@ -9,7 +9,7 @@ freelanceX is a Freelance Marketplace web application developed as a 4th-semeste
 - User Profiles
 - Gig Listings
 - Real-time Communication
-- Payment Integration (Stripe)
+- Payment Integration (PayPal)
 - Ratings and Reviews
 - Search and Filters
 - Seller Dashboard

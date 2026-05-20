@@ -59,9 +59,6 @@ importers:
       prisma:
         specifier: ^4.16.2
         version: 4.16.2
-      stripe:
-        specifier: ^12.18.0
-        version: 12.18.0
     devDependencies:
       '@types/nodemailer':
         specifier: ^7.0.11
@@ -594,10 +591,6 @@ packages:
 
   string_decoder@1.1.1:
     resolution: {integrity: sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==}
-
-  stripe@12.18.0:
-    resolution: {integrity: sha512-cYjgBM2SY/dTm8Lr6eMyyONaHTZHA/QjHxFUIW5WH8FevSRIGAVtXEmBkUXF1fsqe7QvvRgQSGSJZmjDacegGg==}
-    engines: {node: '>=12.*'}
 
   supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
@@ -1208,11 +1201,6 @@ snapshots:
   string_decoder@1.1.1:
     dependencies:
       safe-buffer: 5.1.2
-
-  stripe@12.18.0:
-    dependencies:
-      '@types/node': 25.1.0
-      qs: 6.14.1
 
   supports-color@5.5.0:
     dependencies:

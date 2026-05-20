@@ -9,8 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@stripe/react-stripe-js": "^2.9.0",
-    "@stripe/stripe-js": "^1.54.2",
+    "@paypal/react-paypal-js": "^8.7.0",
     "autoprefixer": "10.4.14",
     "axios": "^1.13.4",
     "framer-motion": "^10.18.0",

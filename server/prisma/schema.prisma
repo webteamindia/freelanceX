@@ -52,6 +52,7 @@ model Order {
   createdAt     DateTime   @default(now())
   buyer         User       @relation(fields: [buyerId], references: [id])
   buyerId       String     @db.ObjectId
+  /// PayPal Checkout order id (kept name for backward compatibility with existing data)
   paymentIntent String     @unique
   isCompleted   Boolean    @default(false)
   gig           Gig        @relation(fields: [gigId], references: [id])

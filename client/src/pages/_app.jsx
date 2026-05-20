@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import { StateProvider } from "../context/StateContext";
 import reducer, { initialState } from "../context/StateReducer";
 import { SessionProvider } from "next-auth/react";
+import AIChatBot from "../components/AIChatBot";
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function App({ Component, pageProps }) {
             <Component {...pageProps} />
           </div>
           <Footer />
+          <AIChatBot />
         </div>
       </StateProvider>
     </SessionProvider>

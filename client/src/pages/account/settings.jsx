@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useCookies } from "react-cookie";
-import { GET_USER_INFO, SET_USER_INFO } from "../../utils/constants";
+import {
+  GET_USER_INFO,
+  SET_PAYPAL_EMAIL,
+  SET_USER_INFO,
+} from "../../utils/constants";
 
 const inputClassName =
   "w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500";
@@ -10,6 +14,7 @@ const AccountSettingsPage = () => {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
+  const [paypalEmail, setPaypalEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +40,7 @@ const AccountSettingsPage = () => {
         setFullName(user.fullName || "");
         setUsername(user.username || "");
         setBio(user.description || "");
+        setPaypalEmail(user.paypalEmail || "");
       } catch (err) {
         setError("Could not load your profile. Please try again.");
       } finally {
@@ -44,6 +50,36 @@ const AccountSettingsPage = () => {
 
     fetchUser();
   }, []);
+
+  const handleSavePaypalEmail = async () => {
+    setError("");
+    setSuccess("");
+    if (!paypalEmail.trim()) {
+      setError("PayPal email is required to receive payouts as a seller.");
+      return;
+    }
+    try {
+      setSaving(true);
+      await axios.post(
+        SET_PAYPAL_EMAIL,
+        { paypalEmail: paypalEmail.trim() },
+        {
+          headers: {
+            Authorization: cookies.jwt ? `Bearer ${cookies.jwt}` : "",
+          },
+          withCredentials: true,
+        }
+      );
+      setSuccess("PayPal payout email saved. You can now receive payments when buyers approve orders.");
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Could not save PayPal email. Please check the address and try again."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     setError("");
@@ -156,6 +192,34 @@ const AccountSettingsPage = () => {
               />
             </div>
           </div>
+        </section>
+
+        <section className="space-y-4 border-t pt-6">
+          <h2 className="text-lg font-medium text-white">Seller payouts (PayPal)</h2>
+          <p className="text-sm text-zinc-400">
+            When a buyer approves your work, ffiver sends your earnings to this PayPal
+            email. It must match an active PayPal account you own.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-1">
+              PayPal email
+            </label>
+            <input
+              type="email"
+              className={inputClassName}
+              placeholder="you@example.com"
+              value={paypalEmail}
+              onChange={(e) => setPaypalEmail(e.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleSavePaypalEmail}
+            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-zinc-700 hover:bg-zinc-600 disabled:opacity-60"
+            disabled={saving}
+          >
+            Save PayPal email
+          </button>
         </section>
 
         <section className="space-y-4 border-t pt-6">

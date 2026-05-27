@@ -10,6 +10,7 @@ import {
   resetPassword,
   oauthGoogle,
   getPublicProfile,
+  setPaypalEmail,
 } from "../controllers/AuthControllers.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 
@@ -23,6 +24,7 @@ authRoutes.post("/reset-password", resetPassword);
 authRoutes.post("/get-user-info", verifyToken, getUserInfo);
 authRoutes.get("/profile/:username", getPublicProfile);
 authRoutes.post("/set-user-info", verifyToken, setUserInfo);
+authRoutes.post("/set-paypal-email", verifyToken, setPaypalEmail);
 
 authRoutes.post(
   "/set-user-image",

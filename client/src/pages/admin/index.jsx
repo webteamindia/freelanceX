@@ -1,123 +1,274 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useCookies } from "react-cookie";
+import {
+  FiAlertCircle,
+  FiBox,
+  FiDollarSign,
+  FiRefreshCw,
+  FiSearch,
+  FiUsers,
+  FiTrendingUp,
+  FiCreditCard,
+} from "react-icons/fi";
+import { HiOutlineSupport } from "react-icons/hi";
+import { toast } from "react-toastify";
+import AdminStatCard from "../../components/admin/AdminStatCard";
+import {
+  filterByQuery,
+  formatDate,
+  formatMoney,
+  PAYOUT_BADGE,
+  shortId,
+} from "../../components/admin/adminUtils";
+import { useStateProvider } from "../../context/StateContext";
 import {
   ADMIN_GIGS_ROUTE,
   ADMIN_ORDERS_ROUTE,
   ADMIN_OVERVIEW_ROUTE,
   ADMIN_TICKETS_ROUTE,
   ADMIN_USERS_ROUTE,
+  adminReleasePayoutRoute,
 } from "../../utils/constants";
 
-const cardStyle = "bg-zinc-900/40 backdrop-blur-md border border-zinc-800 shadow-xl rounded-2xl p-6 flex flex-col justify-center items-center gap-1 transition-all duration-300 hover:bg-zinc-900/60 hover:border-zinc-700 hover:-translate-y-1";
-const statTitleClass = "text-sm font-medium text-zinc-400 font-inter";
-const statNumberClass = "text-4xl font-outfit font-extrabold text-primary drop-shadow-[0_0_12px_rgba(29,191,115,0.3)] mt-2";
+const TABS = [
+  { id: "overview", label: "Overview", icon: FiTrendingUp },
+  { id: "users", label: "Users", icon: FiUsers },
+  { id: "orders", label: "Orders & payouts", icon: FiCreditCard },
+  { id: "gigs", label: "Gigs", icon: FiBox },
+  { id: "support", label: "Support", icon: HiOutlineSupport },
+];
+
+const TableShell = ({ title, description, children, action }) => (
+  <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 border-b border-zinc-800">
+      <div>
+        <h2 className="font-outfit text-lg font-semibold text-white">{title}</h2>
+        {description && (
+          <p className="text-sm text-zinc-500 mt-0.5">{description}</p>
+        )}
+      </div>
+      {action}
+    </div>
+    <div className="overflow-x-auto">{children}</div>
+  </div>
+);
+
+const EmptyRow = ({ colSpan, message }) => (
+  <tr>
+    <td colSpan={colSpan} className="p-12 text-center text-zinc-500 text-sm">
+      {message}
+    </td>
+  </tr>
+);
+
+const Badge = ({ children, className = "" }) => (
+  <span
+    className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${className}`}
+  >
+    {children}
+  </span>
+);
 
 const AdminPage = () => {
+  const router = useRouter();
+  const [{ userInfo }] = useStateProvider();
   const [cookies] = useCookies();
+  const [tab, setTab] = useState("overview");
   const [overview, setOverview] = useState(null);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [gigs, setGigs] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [search, setSearch] = useState("");
+  const [orderFilter, setOrderFilter] = useState("all");
+  const [ticketFilter, setTicketFilter] = useState("all");
 
-  const authConfig = {
-    headers: {
-      Authorization: cookies.jwt ? `Bearer ${cookies.jwt}` : "",
-    },
-  };
+  const authConfig = useMemo(
+    () => ({
+      headers: { Authorization: cookies.jwt ? `Bearer ${cookies.jwt}` : "" },
+    }),
+    [cookies.jwt]
+  );
 
-  const loadAdminData = async () => {
+  const loadAdminData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (silent) setRefreshing(true);
+      else setLoading(true);
       setError("");
 
       const [overviewRes, usersRes, ordersRes, ticketsRes, gigsRes] =
         await Promise.all([
-        axios.get(ADMIN_OVERVIEW_ROUTE, authConfig),
-        axios.get(ADMIN_USERS_ROUTE, authConfig),
-        axios.get(ADMIN_ORDERS_ROUTE, authConfig),
-        axios.get(ADMIN_TICKETS_ROUTE, authConfig),
-        axios.get(ADMIN_GIGS_ROUTE, authConfig),
-      ]);
+          axios.get(ADMIN_OVERVIEW_ROUTE, authConfig),
+          axios.get(ADMIN_USERS_ROUTE, authConfig),
+          axios.get(ADMIN_ORDERS_ROUTE, authConfig),
+          axios.get(ADMIN_TICKETS_ROUTE, authConfig),
+          axios.get(ADMIN_GIGS_ROUTE, authConfig),
+        ]);
 
       setOverview(overviewRes.data.overview);
       setUsers(usersRes.data.users || []);
       setOrders(ordersRes.data.orders || []);
       setTickets(ticketsRes.data.tickets || []);
       setGigs(gigsRes.data.gigs || []);
+      if (silent) toast.success("Dashboard refreshed");
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
         "Could not load admin data. Ensure you are logged in as admin.";
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [authConfig]);
 
   useEffect(() => {
+    if (userInfo && !userInfo.isAdmin) router.replace("/");
+  }, [userInfo, router]);
+
+  useEffect(() => {
+    if (!userInfo?.isAdmin) return;
     loadAdminData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cookies.jwt]);
+  }, [userInfo?.isAdmin, loadAdminData]);
+
+  const filteredUsers = useMemo(
+    () =>
+      filterByQuery(users, search, [
+        "email",
+        "username",
+        "fullName",
+        "paypalEmail",
+      ]),
+    [users, search]
+  );
+
+  const filteredOrders = useMemo(() => {
+    let list = filterByQuery(orders, search, [
+      "id",
+      "buyer.email",
+      "buyer.username",
+      "gig.title",
+      "gig.createdBy.email",
+      "gig.createdBy.username",
+    ]);
+    if (orderFilter === "held") {
+      list = list.filter((o) => o.isCompleted && (o.payoutStatus || "held") === "held");
+    } else if (orderFilter === "released") {
+      list = list.filter((o) => o.payoutStatus === "released");
+    } else if (orderFilter === "failed") {
+      list = list.filter((o) => o.payoutStatus === "failed");
+    } else if (orderFilter === "pending") {
+      list = list.filter((o) => !o.isCompleted);
+    }
+    return list;
+  }, [orders, search, orderFilter]);
+
+  const filteredGigs = useMemo(
+    () =>
+      filterByQuery(gigs, search, [
+        "title",
+        "category",
+        "createdBy.email",
+        "createdBy.username",
+      ]),
+    [gigs, search]
+  );
+
+  const filteredTickets = useMemo(() => {
+    let list = filterByQuery(tickets, search, ["email", "subject", "message"]);
+    if (ticketFilter !== "all") {
+      list = list.filter((t) => t.status === ticketFilter);
+    }
+    return list;
+  }, [tickets, search, ticketFilter]);
 
   const toggleUserStatus = async (userId, currentStatus) => {
+    if (
+      !window.confirm(
+        `${currentStatus ? "Deactivate" : "Activate"} this user?`
+      )
+    )
+      return;
     try {
       await axios.patch(
         `${ADMIN_USERS_ROUTE}/${userId}/status`,
         { isActive: !currentStatus },
         authConfig
       );
-      await loadAdminData();
+      toast.success("User status updated");
+      await loadAdminData(true);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to update user status.");
+      toast.error(err?.response?.data?.message || "Failed to update user.");
     }
   };
 
   const toggleUserRole = async (userId, currentRole) => {
+    if (
+      !window.confirm(
+        `${currentRole ? "Revoke admin from" : "Grant admin to"} this user?`
+      )
+    )
+      return;
     try {
       await axios.patch(
         `${ADMIN_USERS_ROUTE}/${userId}/role`,
         { isAdmin: !currentRole },
         authConfig
       );
-      await loadAdminData();
+      toast.success("User role updated");
+      await loadAdminData(true);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to update user role.");
+      toast.error(err?.response?.data?.message || "Failed to update role.");
     }
   };
 
   const openUserDetails = async (userId) => {
     try {
-      const { data } = await axios.get(`${ADMIN_USERS_ROUTE}/${userId}`, authConfig);
-      setSelectedUser(data.user);
-    } catch (err) {
-      setError(err?.response?.data?.message || "Failed to load user details.");
-    }
-  };
-
-  const updateOrderCompletion = async (orderId, isCompleted) => {
-    try {
-      await axios.patch(
-        `${ADMIN_ORDERS_ROUTE}/${orderId}/status`,
-        { isCompleted: !isCompleted },
+      const { data } = await axios.get(
+        `${ADMIN_USERS_ROUTE}/${userId}`,
         authConfig
       );
-      await loadAdminData();
+      setSelectedUser(data.user);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to update order.");
+      toast.error(err?.response?.data?.message || "Failed to load user.");
     }
   };
 
-  const deleteGig = async (gigId) => {
+  const adminReleasePayout = async (orderId) => {
+    if (
+      !window.confirm(
+        "Force-release payout to seller via PayPal? Use only when the buyer approved offline or payout failed."
+      )
+    )
+      return;
+    try {
+      const { data } = await axios.post(
+        adminReleasePayoutRoute(orderId),
+        {},
+        authConfig
+      );
+      toast.success(data.message || "Payout released");
+      await loadAdminData(true);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Payout failed");
+    }
+  };
+
+  const deleteGig = async (gigId, title) => {
+    if (!window.confirm(`Delete gig "${title}"? This cannot be undone.`)) return;
     try {
       await axios.delete(`${ADMIN_GIGS_ROUTE}/${gigId}`, authConfig);
-      await loadAdminData();
+      toast.success("Gig deleted");
+      await loadAdminData(true);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to delete gig.");
+      toast.error(err?.response?.data?.message || "Failed to delete gig.");
     }
   };
 
@@ -128,322 +279,727 @@ const AdminPage = () => {
         { status },
         authConfig
       );
-      await loadAdminData();
+      toast.success("Ticket updated");
+      await loadAdminData(true);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to update ticket.");
+      toast.error(err?.response?.data?.message || "Failed to update ticket.");
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <p className="text-zinc-400">Loading admin panel...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-zinc-400 text-sm">Loading admin dashboard…</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6 md:p-10 space-y-10 pb-20">
-      <div className="max-w-[1600px] mx-auto w-full space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold font-outfit text-white tracking-tight">Admin Dashboard</h1>
-          <p className="text-zinc-400 font-inter mt-1">
-            Platform-wide overview for users, orders, and support operations.
-          </p>
-          {error && <p className="text-sm text-red-600 mt-2 font-medium bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</p>}
-        </div>
-
-      {overview && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Users</p>
-            <p className={statNumberClass}>{overview.users}</p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="sticky top-0 z-30 border-b border-zinc-800 bg-background/90 backdrop-blur-md">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-xs font-medium text-primary uppercase tracking-widest">
+              Platform control
+            </p>
+            <h1 className="text-2xl md:text-3xl font-outfit font-bold text-white">
+              Admin Dashboard
+            </h1>
+            <p className="text-sm text-zinc-500 mt-0.5">
+              Signed in as {userInfo?.email}
+            </p>
           </div>
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Sellers</p>
-            <p className={statNumberClass}>{overview.sellers}</p>
-          </div>
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Buyers</p>
-            <p className={statNumberClass}>{overview.buyers}</p>
-          </div>
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Gigs</p>
-            <p className={statNumberClass}>{overview.gigs}</p>
-          </div>
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Orders</p>
-            <p className={statNumberClass}>{overview.orders}</p>
-          </div>
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Completed</p>
-            <p className={statNumberClass}>{overview.completedOrders}</p>
-          </div>
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Open Tickets</p>
-            <p className={statNumberClass}>{overview.openTickets}</p>
-          </div>
-          <div className={cardStyle}>
-            <p className={statTitleClass}>Revenue</p>
-            <p className={statNumberClass}>${overview.revenue || 0}</p>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-zinc-900/80 border border-zinc-800 shadow-xl rounded-2xl overflow-hidden backdrop-blur-sm">
-        <div className="p-6 border-b border-zinc-800 bg-zinc-900/50">
-          <h2 className="font-outfit font-semibold text-xl text-white tracking-wide">Users Administration</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm font-inter">
-            <thead className="bg-zinc-950/80">
-              <tr>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Email</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Username</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Role</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Status</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Gigs</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Orders</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-zinc-800/30 transition-colors">
-                  <td className="p-4 text-zinc-300 font-medium">{user.email}</td>
-                  <td className="p-4 text-zinc-400">{user.username || "-"}</td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${user.isAdmin ? 'bg-purple-500/10 text-purple-400' : 'bg-zinc-800 text-zinc-400'}`}>
-                      {user.isAdmin ? "Admin" : "User"}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${user.isActive ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500'}`}>
-                      {user.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="p-4 text-zinc-300">{user._count?.gigs || 0}</td>
-                  <td className="p-4 text-zinc-300">{user._count?.orders || 0}</td>
-                  <td className="p-4">
-                    <div className="flex gap-2 flex-wrap">
-                      <button
-                        className="text-xs font-semibold px-3 py-1.5 border border-zinc-700 rounded-full hover:bg-zinc-800 text-zinc-300 transition-colors"
-                        onClick={() => openUserDetails(user.id)}
-                      >
-                        Details
-                      </button>
-                      {!user.isAdmin && (
-                        <button
-                          className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${user.isActive ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-primary/10 text-primary hover:bg-primary/20"}`}
-                          onClick={() => toggleUserStatus(user.id, user.isActive)}
-                        >
-                          {user.isActive ? "Deactivate" : "Activate"}
-                        </button>
-                      )}
-                      <button
-                        className="text-xs font-semibold px-3 py-1.5 border border-zinc-700 rounded-full hover:bg-zinc-800 text-zinc-300 transition-colors"
-                        onClick={() => toggleUserRole(user.id, user.isAdmin)}
-                      >
-                        {user.isAdmin ? "Revoke Admin" : "Make Admin"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {selectedUser && (
-        <div className="bg-zinc-900 border border-zinc-800 shadow rounded-2xl border border-zinc-800 p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-white">User Details</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] md:min-w-[280px]">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <input
+                type="search"
+                placeholder="Search current tab…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-sm text-white placeholder:text-zinc-600 focus:border-primary focus:outline-none"
+              />
+            </div>
             <button
-              className="text-xs px-2 py-1 border rounded hover:bg-zinc-800/80"
-              onClick={() => setSelectedUser(null)}
+              type="button"
+              onClick={() => loadAdminData(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-sm text-zinc-200 hover:bg-zinc-700 disabled:opacity-50"
             >
-              Close
+              <FiRefreshCw className={refreshing ? "animate-spin" : ""} />
+              Refresh
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
-            <p>
-              <span className="text-zinc-400">Email:</span> {selectedUser.email}
-            </p>
-            <p>
-              <span className="text-zinc-400">Username:</span>{" "}
-              {selectedUser.username || "-"}
-            </p>
-            <p>
-              <span className="text-zinc-400">Role:</span>{" "}
-              {selectedUser.isAdmin ? "Admin" : "User"}
-            </p>
-            <p>
-              <span className="text-zinc-400">Status:</span>{" "}
-              {selectedUser.isActive ? "Active" : "Inactive"}
-            </p>
-            <p>
-              <span className="text-zinc-400">Gigs:</span>{" "}
-              {selectedUser._count?.gigs || 0}
-            </p>
-            <p>
-              <span className="text-zinc-400">Orders:</span>{" "}
-              {selectedUser._count?.orders || 0}
-            </p>
-            <p>
-              <span className="text-zinc-400">Reviews:</span>{" "}
-              {selectedUser._count?.reviews || 0}
-            </p>
-            <p>
-              <span className="text-zinc-400">Favorites:</span>{" "}
-              {selectedUser._count?.favorites || 0}
-            </p>
+        </div>
+
+        <nav className="max-w-[1600px] mx-auto px-4 md:px-8 flex gap-1 overflow-x-auto pb-3 scrollbar-hide">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setTab(id);
+                setSearch("");
+              }}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                tab === id
+                  ? "bg-primary text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+              }`}
+            >
+              <Icon />
+              {label}
+              {id === "support" && overview?.openTickets > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-red-500 text-white">
+                  {overview.openTickets}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-8 space-y-8 pb-24">
+        {error && (
+          <div className="flex items-start gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-200 text-sm">
+            <FiAlertCircle className="shrink-0 mt-0.5 text-lg" />
+            {error}
+          </div>
+        )}
+
+        {/* OVERVIEW */}
+        {tab === "overview" && overview && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <AdminStatCard
+                label="Total users"
+                value={overview.users}
+                sub={`+${overview.newUsersWeek} this week · ${overview.activeUsers} active`}
+                icon={FiUsers}
+              />
+              <AdminStatCard
+                label="Gross volume"
+                value={formatMoney(overview.revenue)}
+                sub={`${overview.completedOrders} paid orders`}
+                icon={FiDollarSign}
+                accent="text-white"
+              />
+              <AdminStatCard
+                label="Platform fees"
+                value={formatMoney(overview.platformFees)}
+                sub={`${overview.platformFeePercent}% fee on completed orders`}
+                icon={FiTrendingUp}
+              />
+              <AdminStatCard
+                label="Held for sellers"
+                value={formatMoney(overview.payoutsHeld?.sellerAmount)}
+                sub={`${overview.payoutsHeld?.count} awaiting buyer approval`}
+                icon={FiCreditCard}
+                alert={overview.payoutsHeld?.count > 0}
+                onClick={() => {
+                  setTab("orders");
+                  setOrderFilter("held");
+                }}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {[
+                ["Sellers", overview.sellers],
+                ["Buyers", overview.buyers],
+                ["Gigs", overview.gigs],
+                ["Open tickets", overview.openTickets, true],
+                ["Failed payouts", overview.failedPayouts, overview.failedPayouts > 0],
+                ["Sellers w/o PayPal", overview.sellersWithoutPaypal, overview.sellersWithoutPaypal > 0],
+              ].map(([label, val, alert]) => (
+                <div
+                  key={label}
+                  className={`rounded-xl border p-4 ${
+                    alert
+                      ? "border-amber-500/30 bg-amber-500/5"
+                      : "border-zinc-800 bg-zinc-900/40"
+                  }`}
+                >
+                  <p className="text-xs text-zinc-500">{label}</p>
+                  <p className="text-xl font-semibold text-white mt-1">{val}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <TableShell title="Recent orders" description="Latest activity across the marketplace">
+                <table className="min-w-full text-sm">
+                  <thead className="text-xs uppercase text-zinc-500 bg-zinc-950/50">
+                    <tr>
+                      <th className="text-left p-3">Gig</th>
+                      <th className="text-left p-3">Buyer</th>
+                      <th className="text-left p-3">Payout</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {(overview.recentOrders || []).length === 0 ? (
+                      <EmptyRow colSpan={3} message="No orders yet" />
+                    ) : (
+                      overview.recentOrders.map((o) => (
+                        <tr key={o.id} className="hover:bg-zinc-800/30">
+                          <td className="p-3 text-zinc-300 max-w-[180px] truncate">
+                            {o.gig?.title || "—"}
+                          </td>
+                          <td className="p-3 text-zinc-400">
+                            {o.buyer?.username || o.buyer?.email}
+                          </td>
+                          <td className="p-3">
+                            <Badge
+                              className={
+                                PAYOUT_BADGE[o.payoutStatus || "held"] ||
+                                PAYOUT_BADGE.held
+                              }
+                            >
+                              {o.isCompleted
+                                ? o.payoutStatus || "held"
+                                : "unpaid"}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </TableShell>
+
+              <TableShell title="Open support" description="Needs attention">
+                <table className="min-w-full text-sm">
+                  <thead className="text-xs uppercase text-zinc-500 bg-zinc-950/50">
+                    <tr>
+                      <th className="text-left p-3">From</th>
+                      <th className="text-left p-3">Subject</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {(overview.recentTickets || []).length === 0 ? (
+                      <EmptyRow colSpan={2} message="No open tickets" />
+                    ) : (
+                      overview.recentTickets.map((t) => (
+                        <tr
+                          key={t.id}
+                          className="hover:bg-zinc-800/30 cursor-pointer"
+                          onClick={() => setTab("support")}
+                        >
+                          <td className="p-3 text-zinc-400">{t.email}</td>
+                          <td className="p-3 text-zinc-300">{t.subject}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </TableShell>
+            </div>
+          </div>
+        )}
+
+        {/* USERS */}
+        {tab === "users" && (
+          <TableShell
+            title="Users"
+            description={`${filteredUsers.length} of ${users.length} users`}
+          >
+            <table className="min-w-full text-sm">
+              <thead className="text-xs uppercase text-zinc-500 bg-zinc-950/50">
+                <tr>
+                  <th className="text-left p-3">User</th>
+                  <th className="text-left p-3">PayPal</th>
+                  <th className="text-left p-3">Role</th>
+                  <th className="text-left p-3">Stats</th>
+                  <th className="text-left p-3">Joined</th>
+                  <th className="text-left p-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/60">
+                {filteredUsers.length === 0 ? (
+                  <EmptyRow colSpan={6} message="No users match your search" />
+                ) : (
+                  filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-zinc-800/30">
+                      <td className="p-3">
+                        <p className="text-zinc-200 font-medium">{user.email}</p>
+                        <p className="text-zinc-500 text-xs">
+                          @{user.username || "—"} · {user.fullName || "No name"}
+                        </p>
+                      </td>
+                      <td className="p-3">
+                        {user.paypalEmail ? (
+                          <span className="text-emerald-400 text-xs">
+                            {user.paypalEmail}
+                          </span>
+                        ) : (
+                          <span className="text-amber-500 text-xs">Not set</span>
+                        )}
+                      </td>
+                      <td className="p-3 space-y-1">
+                        <Badge
+                          className={
+                            user.isAdmin
+                              ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                              : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                          }
+                        >
+                          {user.isAdmin ? "Admin" : "User"}
+                        </Badge>
+                        <Badge
+                          className={
+                            user.isActive
+                              ? "bg-primary/15 text-primary border-primary/30"
+                              : "bg-red-500/15 text-red-400 border-red-500/30"
+                          }
+                        >
+                          {user.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-zinc-400 text-xs">
+                        {user._count?.gigs || 0} gigs · {user._count?.orders || 0}{" "}
+                        orders · {user._count?.reviews || 0} reviews
+                      </td>
+                      <td className="p-3 text-zinc-500 text-xs whitespace-nowrap">
+                        {formatDate(user.createdAt)}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            className="text-xs px-2.5 py-1 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                            onClick={() => openUserDetails(user.id)}
+                          >
+                            View
+                          </button>
+                          {!user.isAdmin && (
+                            <button
+                              type="button"
+                              className="text-xs px-2.5 py-1 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                              onClick={() => toggleUserStatus(user.id, user.isActive)}
+                            >
+                              {user.isActive ? "Deactivate" : "Activate"}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="text-xs px-2.5 py-1 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                            onClick={() => toggleUserRole(user.id, user.isAdmin)}
+                          >
+                            {user.isAdmin ? "Revoke admin" : "Make admin"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </TableShell>
+        )}
+
+        {/* ORDERS */}
+        {tab === "orders" && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {[
+                ["all", "All"],
+                ["held", "Held"],
+                ["released", "Released"],
+                ["failed", "Failed"],
+                ["pending", "Unpaid"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setOrderFilter(id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                    orderFilter === id
+                      ? "bg-primary text-white"
+                      : "bg-zinc-800 text-zinc-400"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <TableShell
+              title="Orders & payouts"
+              description="Payment capture, platform fee, and seller release status"
+            >
+              <table className="min-w-full text-sm">
+                <thead className="text-xs uppercase text-zinc-500 bg-zinc-950/50">
+                  <tr>
+                    <th className="text-left p-3">Order</th>
+                    <th className="text-left p-3">Buyer → Seller</th>
+                    <th className="text-left p-3">Amounts</th>
+                    <th className="text-left p-3">Payment</th>
+                    <th className="text-left p-3">Payout</th>
+                    <th className="text-left p-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {filteredOrders.length === 0 ? (
+                    <EmptyRow colSpan={6} message="No orders match filters" />
+                  ) : (
+                    filteredOrders.map((order) => {
+                      const ps = order.payoutStatus || "held";
+                      const canRelease =
+                        order.isCompleted &&
+                        (ps === "held" || ps === "failed");
+                      return (
+                        <tr key={order.id} className="hover:bg-zinc-800/30 align-top">
+                          <td className="p-3">
+                            <p className="font-mono text-xs text-zinc-500">
+                              {shortId(order.id)}
+                            </p>
+                            <p className="text-zinc-300 text-xs mt-1 max-w-[140px] truncate">
+                              {order.gig?.title}
+                            </p>
+                            <p className="text-zinc-600 text-xs">
+                              {formatDate(order.createdAt)}
+                            </p>
+                          </td>
+                          <td className="p-3 text-xs">
+                            <p className="text-zinc-400">
+                              B: {order.buyer?.email}
+                            </p>
+                            <p className="text-zinc-500 mt-1">
+                              S: {order.gig?.createdBy?.email || "—"}
+                            </p>
+                            {!order.gig?.createdBy?.paypalEmail && (
+                              <p className="text-amber-500 mt-1">No PayPal</p>
+                            )}
+                          </td>
+                          <td className="p-3 text-xs text-zinc-300">
+                            <p>Gross {formatMoney(order.price)}</p>
+                            <p className="text-zinc-500">
+                              Fee {formatMoney(order.platformFeeAmount)}
+                            </p>
+                            <p className="text-primary">
+                              Seller {formatMoney(order.sellerEarningsAmount)}
+                            </p>
+                          </td>
+                          <td className="p-3">
+                            <Badge
+                              className={
+                                order.isCompleted
+                                  ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                                  : "bg-orange-500/15 text-orange-300 border-orange-500/30"
+                              }
+                            >
+                              {order.isCompleted ? "Paid" : "Unpaid"}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge className={PAYOUT_BADGE[ps] || PAYOUT_BADGE.held}>
+                              {ps}
+                            </Badge>
+                            {order.payoutError && (
+                              <p className="text-red-400 text-xs mt-1 max-w-[160px]">
+                                {order.payoutError}
+                              </p>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            {canRelease && (
+                              <button
+                                type="button"
+                                onClick={() => adminReleasePayout(order.id)}
+                                className="text-xs px-2.5 py-1 rounded-lg bg-primary/20 text-primary hover:bg-primary/30"
+                              >
+                                Force release
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </TableShell>
+          </div>
+        )}
+
+        {/* GIGS */}
+        {tab === "gigs" && (
+          <TableShell
+            title="Gigs"
+            description={`${filteredGigs.length} listings`}
+          >
+            <table className="min-w-full text-sm">
+              <thead className="text-xs uppercase text-zinc-500 bg-zinc-950/50">
+                <tr>
+                  <th className="text-left p-3">Gig</th>
+                  <th className="text-left p-3">Seller</th>
+                  <th className="text-left p-3">Price</th>
+                  <th className="text-left p-3">Engagement</th>
+                  <th className="text-left p-3">Created</th>
+                  <th className="text-left p-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/60">
+                {filteredGigs.length === 0 ? (
+                  <EmptyRow colSpan={6} message="No gigs found" />
+                ) : (
+                  filteredGigs.map((gig) => (
+                    <tr key={gig.id} className="hover:bg-zinc-800/30">
+                      <td className="p-3">
+                        <p className="text-zinc-200 font-medium max-w-[220px] truncate">
+                          {gig.title}
+                        </p>
+                        <p className="text-zinc-500 text-xs">{gig.category}</p>
+                      </td>
+                      <td className="p-3 text-xs text-zinc-400">
+                        {gig.createdBy?.username || gig.createdBy?.email}
+                        {!gig.createdBy?.paypalEmail && (
+                          <span className="block text-amber-500">No PayPal</span>
+                        )}
+                      </td>
+                      <td className="p-3 font-semibold text-white">
+                        {formatMoney(gig.price)}
+                      </td>
+                      <td className="p-3 text-xs text-zinc-400">
+                        {gig._count?.orders || 0} orders ·{" "}
+                        {gig._count?.favoritedBy || 0} favs ·{" "}
+                        {gig._count?.reviews || 0} reviews
+                      </td>
+                      <td className="p-3 text-xs text-zinc-500">
+                        {formatDate(gig.createdAt)}
+                      </td>
+                      <td className="p-3">
+                        <button
+                          type="button"
+                          className="text-xs px-2.5 py-1 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                          onClick={() => deleteGig(gig.id, gig.title)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </TableShell>
+        )}
+
+        {/* SUPPORT */}
+        {tab === "support" && (
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              {["all", "open", "resolved"].map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setTicketFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize ${
+                    ticketFilter === f
+                      ? "bg-primary text-white"
+                      : "bg-zinc-800 text-zinc-400"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            <TableShell title="Support tickets">
+              <table className="min-w-full text-sm">
+                <thead className="text-xs uppercase text-zinc-500 bg-zinc-950/50">
+                  <tr>
+                    <th className="text-left p-3">Contact</th>
+                    <th className="text-left p-3">Subject</th>
+                    <th className="text-left p-3">Message</th>
+                    <th className="text-left p-3">Status</th>
+                    <th className="text-left p-3">Date</th>
+                    <th className="text-left p-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {filteredTickets.length === 0 ? (
+                    <EmptyRow colSpan={6} message="No tickets" />
+                  ) : (
+                    filteredTickets.map((ticket) => (
+                      <tr key={ticket.id} className="hover:bg-zinc-800/30 align-top">
+                        <td className="p-3 text-zinc-300">{ticket.email}</td>
+                        <td className="p-3 text-zinc-200 font-medium">
+                          {ticket.subject}
+                        </td>
+                        <td className="p-3 text-zinc-400 max-w-xs text-xs leading-relaxed">
+                          {ticket.message}
+                        </td>
+                        <td className="p-3">
+                          <Badge
+                            className={
+                              ticket.status === "open"
+                                ? "bg-orange-500/15 text-orange-300 border-orange-500/30"
+                                : "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                            }
+                          >
+                            {ticket.status}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-xs text-zinc-500 whitespace-nowrap">
+                          {formatDate(ticket.createdAt)}
+                        </td>
+                        <td className="p-3">
+                          <button
+                            type="button"
+                            className="text-xs px-2.5 py-1 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                            onClick={() =>
+                              setTicketStatus(
+                                ticket.id,
+                                ticket.status === "open" ? "resolved" : "open"
+                              )
+                            }
+                          >
+                            {ticket.status === "open" ? "Resolve" : "Reopen"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </TableShell>
+          </div>
+        )}
+      </div>
+
+      {/* User detail drawer */}
+      {selectedUser && (
+        <div
+          className="fixed inset-0 z-50 flex justify-end"
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setSelectedUser(null)}
+            aria-label="Close"
+          />
+          <div className="relative w-full max-w-lg bg-zinc-950 border-l border-zinc-800 h-full overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-zinc-950 border-b border-zinc-800 p-5 flex justify-between items-start">
+              <div>
+                <h2 className="text-xl font-outfit font-semibold text-white">
+                  {selectedUser.fullName || selectedUser.username || "User"}
+                </h2>
+                <p className="text-sm text-zinc-500">{selectedUser.email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedUser(null)}
+                className="text-zinc-400 hover:text-white text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-5 space-y-6">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl bg-zinc-900 p-3 border border-zinc-800">
+                  <p className="text-zinc-500 text-xs">Role</p>
+                  <p className="text-white mt-1">
+                    {selectedUser.isAdmin ? "Admin" : "User"}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-zinc-900 p-3 border border-zinc-800">
+                  <p className="text-zinc-500 text-xs">Status</p>
+                  <p className="text-white mt-1">
+                    {selectedUser.isActive ? "Active" : "Inactive"}
+                  </p>
+                </div>
+                <div className="col-span-2 rounded-xl bg-zinc-900 p-3 border border-zinc-800">
+                  <p className="text-zinc-500 text-xs">PayPal payout email</p>
+                  <p className="text-white mt-1">
+                    {selectedUser.paypalEmail || (
+                      <span className="text-amber-500">Not configured</span>
+                    )}
+                  </p>
+                </div>
+                <div className="col-span-2 rounded-xl bg-zinc-900 p-3 border border-zinc-800">
+                  <p className="text-zinc-500 text-xs">Bio</p>
+                  <p className="text-zinc-300 mt-1 text-sm">
+                    {selectedUser.description || "—"}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-zinc-500 mb-2">Activity</p>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {[
+                    ["Gigs", selectedUser._count?.gigs],
+                    ["Orders", selectedUser._count?.orders],
+                    ["Reviews", selectedUser._count?.reviews],
+                    ["Favorites", selectedUser._count?.favorites],
+                    ["Sent msgs", selectedUser._count?.messagesSent],
+                    ["Received", selectedUser._count?.messagesReceived],
+                  ].map(([l, v]) => (
+                    <span
+                      key={l}
+                      className="px-2 py-1 rounded-lg bg-zinc-800 text-zinc-300"
+                    >
+                      {l}: {v || 0}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {selectedUser.gigs?.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase text-zinc-500 mb-2">
+                    Recent gigs
+                  </p>
+                  <ul className="space-y-2">
+                    {selectedUser.gigs.map((g) => (
+                      <li
+                        key={g.id}
+                        className="text-sm p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex justify-between"
+                      >
+                        <span className="text-zinc-300 truncate pr-2">
+                          {g.title}
+                        </span>
+                        <span className="text-primary shrink-0">
+                          {formatMoney(g.price)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {selectedUser.orders?.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase text-zinc-500 mb-2">
+                    Recent purchases
+                  </p>
+                  <ul className="space-y-2">
+                    {selectedUser.orders.map((o) => (
+                      <li
+                        key={o.id}
+                        className="text-sm p-3 rounded-xl bg-zinc-900 border border-zinc-800"
+                      >
+                        <p className="text-zinc-300">{o.gig?.title}</p>
+                        <p className="text-zinc-500 text-xs mt-1">
+                          {formatMoney(o.price)} · {o.payoutStatus || "—"} ·{" "}
+                          {formatDate(o.createdAt)}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
-
-      <div className="bg-zinc-900/80 border border-zinc-800 shadow-xl rounded-2xl overflow-hidden backdrop-blur-sm">
-        <div className="p-6 border-b border-zinc-800 bg-zinc-900/50">
-          <h2 className="font-outfit font-semibold text-xl text-white tracking-wide">Recent Orders</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm font-inter">
-            <thead className="bg-zinc-950/80">
-              <tr>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Order ID</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Buyer</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Gig</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Price</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Status</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60">
-              {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-zinc-800/30 transition-colors">
-                  <td className="p-4 text-zinc-400 font-mono text-xs">{order.id.slice(-6).toUpperCase()}</td>
-                  <td className="p-4 text-zinc-300 font-medium">
-                    {order.buyer?.username || order.buyer?.email || "-"}
-                  </td>
-                  <td className="p-4 text-zinc-300 max-w-[200px] truncate">{order.gig?.title || "-"}</td>
-                  <td className="p-4 font-bold text-white">${order.price}</td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${order.isCompleted ? 'bg-primary/10 text-primary' : 'bg-orange-500/10 text-orange-400'}`}>
-                      {order.isCompleted ? "Completed" : "In Progress"}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 border border-zinc-700 rounded-full hover:bg-zinc-800 text-zinc-300 transition-colors"
-                      onClick={() =>
-                        updateOrderCompletion(order.id, order.isCompleted)
-                      }
-                    >
-                      Mark {order.isCompleted ? "In Progress" : "Completed"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="bg-zinc-900/80 border border-zinc-800 shadow-xl rounded-2xl overflow-hidden backdrop-blur-sm">
-        <div className="p-6 border-b border-zinc-800 bg-zinc-900/50">
-          <h2 className="font-outfit font-semibold text-xl text-white tracking-wide">Gigs Moderation</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm font-inter">
-            <thead className="bg-zinc-950/80">
-              <tr>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Title</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Seller</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Price</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Orders</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Favorites</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60">
-              {gigs.map((gig) => (
-                <tr key={gig.id} className="hover:bg-zinc-800/30 transition-colors">
-                  <td className="p-4 text-zinc-300 font-medium max-w-[250px] truncate">{gig.title}</td>
-                  <td className="p-4 text-zinc-400">
-                    {gig.createdBy?.username || gig.createdBy?.email || "-"}
-                  </td>
-                  <td className="p-4 font-bold text-white">${gig.price}</td>
-                  <td className="p-4 text-zinc-300">{gig._count?.orders || 0}</td>
-                  <td className="p-4 text-zinc-300">{gig._count?.favoritedBy || 0}</td>
-                  <td className="p-4">
-                    <button
-                      className="text-xs font-semibold px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
-                      onClick={() => deleteGig(gig.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="bg-zinc-900/80 border border-zinc-800 shadow-xl rounded-2xl overflow-hidden backdrop-blur-sm">
-        <div className="p-6 border-b border-zinc-800 bg-zinc-900/50">
-          <h2 className="font-outfit font-semibold text-xl text-white tracking-wide">Support Tickets</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm font-inter">
-            <thead className="bg-zinc-950/80">
-              <tr>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Email</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Subject</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Message</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Status</th>
-                <th className="text-left p-4 text-xs uppercase tracking-wider text-zinc-500 font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/60">
-              {tickets.map((ticket) => (
-                <tr key={ticket.id} className="hover:bg-zinc-800/30 transition-colors">
-                  <td className="p-4 text-zinc-300 font-medium">{ticket.email}</td>
-                  <td className="p-4 text-zinc-300 font-medium">{ticket.subject}</td>
-                  <td className="p-4 text-zinc-400 max-w-xs truncate">{ticket.message}</td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${ticket.status === 'open' ? 'bg-orange-500/10 text-orange-400' : 'bg-primary/10 text-primary'}`}>
-                      {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {ticket.status === "open" ? (
-                      <button
-                        className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                        onClick={() => setTicketStatus(ticket.id, "resolved")}
-                      >
-                        Mark Resolved
-                      </button>
-                    ) : (
-                      <button
-                        className="text-xs font-semibold px-3 py-1.5 border border-zinc-700 rounded-full hover:bg-zinc-800 text-zinc-300 transition-colors"
-                        onClick={() => setTicketStatus(ticket.id, "open")}
-                      >
-                        Reopen
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      </div>
     </div>
   );
 };
 
 export default AdminPage;
-

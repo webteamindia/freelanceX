@@ -18,6 +18,8 @@ model User {
   isProfileInfoSet Boolean?   @default(false)
   isAdmin          Boolean    @default(false)
   isActive         Boolean    @default(true)
+  /// PayPal email for receiving seller payouts (must match a PayPal account)
+  paypalEmail      String?
   createdAt        DateTime   @default(now())
   gigs             Gig[]
   orders           Order[]
@@ -53,12 +55,21 @@ model Order {
   buyer         User       @relation(fields: [buyerId], references: [id])
   buyerId       String     @db.ObjectId
   /// PayPal Checkout order id (kept name for backward compatibility with existing data)
-  paymentIntent String     @unique
-  isCompleted   Boolean    @default(false)
-  gig           Gig        @relation(fields: [gigId], references: [id])
-  gigId         String     @db.ObjectId
-  price         Int
-  messages      Messages[]
+  paymentIntent       String     @unique
+  isCompleted         Boolean    @default(false)
+  /// held = paid by buyer, awaiting buyer approval | released = sent to seller | failed = payout error
+  payoutStatus        String     @default("held")
+  platformFeeAmount   Float?
+  sellerEarningsAmount Float?
+  paypalCaptureId     String?
+  buyerApprovedAt     DateTime?
+  paidOutAt           DateTime?
+  payoutBatchId       String?
+  payoutError         String?
+  gig                 Gig        @relation(fields: [gigId], references: [id])
+  gigId               String     @db.ObjectId
+  price               Int
+  messages            Messages[]
 }
 
 model Reviews {

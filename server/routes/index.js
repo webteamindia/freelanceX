@@ -8,11 +8,29 @@ import { supportRoutes } from "./SupportRoutes.js";
 import { adminRoutes } from "./AdminRoutes.js";
 import express from "express";
 import { oauthGoogle } from "../controllers/AuthControllers.js";
+import prisma from "../prisma/client.js";
 
 const router = Router();
 
 router.get("/ping", (req, res) => {
   res.send("pong 🏓");
+});
+
+router.get("/api/health", async (req, res) => {
+  try {
+    await prisma.$runCommandRaw({ ping: 1 });
+    return res.status(200).json({
+      ok: true,
+      service: "freelanceX-api",
+      database: "connected",
+    });
+  } catch (err) {
+    return res.status(503).json({
+      ok: false,
+      service: "freelanceX-api",
+      database: "disconnected",
+    });
+  }
 });
 
 router.use("/uploads/profiles", express.static("uploads/profiles"));

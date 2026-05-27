@@ -10,6 +10,7 @@ import {
   getAdminUserDetails,
   getAdminUsers,
   resolveSupportTicket,
+  adminReleaseOrderPayout,
   updateOrderStatus,
   updateUserRole,
   updateUserStatus,
@@ -26,6 +27,7 @@ adminRoutes.patch("/users/:userId/status", updateUserStatus);
 adminRoutes.patch("/users/:userId/role", updateUserRole);
 adminRoutes.get("/orders", getAdminOrders);
 adminRoutes.patch("/orders/:orderId/status", updateOrderStatus);
+adminRoutes.post("/orders/:orderId/release-payout", adminReleaseOrderPayout);
 adminRoutes.get("/gigs", getAdminGigs);
 adminRoutes.delete("/gigs/:gigId", deleteGigAsAdmin);
 adminRoutes.get("/tickets", getAdminSupportTickets);

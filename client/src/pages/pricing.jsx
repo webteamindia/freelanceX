@@ -9,7 +9,7 @@ const PricingPage = () => {
             Pricing &amp; fees
           </h1>
           <p className="text-sm text-zinc-400 mt-1">
-            How ffiver charges fees and when payouts are released to sellers.
+            How ffiver charges fees and pays sellers after buyer approval.
           </p>
         </header>
 
@@ -18,11 +18,9 @@ const PricingPage = () => {
             For buyers
           </h2>
           <p className="text-sm text-zinc-300">
-            You pay the gig price shown at checkout. In most cases, ffiver
-            charges a small service fee on top of the gig price, which will be
-            clearly displayed before you confirm payment. Funds are held
-            securely until you approve the delivery or the order is otherwise
-            closed under our policies.
+            You pay the gig price at checkout via PayPal. The seller&apos;s share
+            and platform fee are shown before you pay. Your payment is held until
+            you approve the work, then the seller is paid automatically.
           </p>
         </section>
 
@@ -31,13 +29,11 @@ const PricingPage = () => {
             For sellers
           </h2>
           <p className="text-sm text-zinc-300">
-            You set your own gig prices. ffiver charges a service fee on the
-            total order amount and pays you the remainder as your net earnings.
-            Earnings are usually cleared and available for withdrawal a set
-            number of days after the order is marked as completed, to allow time
-            for dispute handling and security checks. You can withdraw cleared
-            funds to supported payout methods such as bank transfer or PayPal,
-            where available.
+            You set your own gig prices. Add your PayPal email in account settings
+            so we can send earnings when buyers approve orders. ffiver deducts a
+            platform fee (see checkout breakdown; default 10%) and pays the rest
+            to your PayPal via PayPal Payouts. Until the buyer approves, funds
+            stay held on the platform.
           </p>
         </section>
 

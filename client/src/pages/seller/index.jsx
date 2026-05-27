@@ -130,9 +130,32 @@ function Index() {
               <div className="shadow-[0_10px_30px_rgba(0,0,0,0.4)] h-max p-10 flex flex-col gap-2 cursor-pointer hover:shadow-xl transition-all duration-300">
                 <h2 className="text-xl">Earnings Yearly</h2>
                 <h3 className="text-primary text-3xl font-extrabold">
-                  ${dashboardData?.revenue}
+                  ${Number(dashboardData?.revenue || 0).toFixed(2)}
                 </h3>
               </div>
+
+              <div
+                className="shadow-[0_10px_30px_rgba(0,0,0,0.4)] h-max p-10 flex flex-col gap-2 cursor-pointer hover:shadow-xl transition-all duration-300"
+                onClick={() => router.push("/account/settings")}
+              >
+                <h2 className="text-xl">Pending payout</h2>
+                <h3 className="text-amber-400 text-3xl font-extrabold">
+                  ${Number(dashboardData?.pendingPayouts || 0).toFixed(2)}
+                </h3>
+                <p className="text-xs text-zinc-500">
+                  Awaiting buyer approval
+                </p>
+              </div>
+
+              {!dashboardData?.hasPayoutEmail && (
+                <div
+                  className="col-span-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-200"
+                  onClick={() => router.push("/account/settings")}
+                >
+                  Add your PayPal email in account settings to receive payouts
+                  when buyers approve orders.
+                </div>
+              )}
             </div>
           </div>
         </div>

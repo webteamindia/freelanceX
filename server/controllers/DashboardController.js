@@ -30,70 +30,65 @@ export const getSellerData = async (req, res, next) => {
       const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const thisYear = new Date(today.getFullYear(), 0, 1);
 
-      const {
-        _sum: { price: revenue },
-      } = await prisma.order.aggregate({
-        where: {
-          gig: {
-            createdBy: {
-              id: req.userId,
-            },
-          },
-          isCompleted: true,
-          createdAt: {
-            gte: thisYear,
-          },
-        },
-        _sum: {
-          price: true,
-        },
+      const sellerOrderFilter = {
+        gig: { createdBy: { id: req.userId } },
+        isCompleted: true,
+      };
+
+      const releasedFilter = {
+        ...sellerOrderFilter,
+        payoutStatus: "released",
+      };
+
+      const pendingFilter = {
+        ...sellerOrderFilter,
+        payoutStatus: "held",
+      };
+
+      const sumReleased = async (dateFilter) =>
+        prisma.order.aggregate({
+          where: { ...releasedFilter, ...dateFilter },
+          _sum: { sellerEarningsAmount: true },
+        });
+
+      const sumPending = () =>
+        prisma.order.aggregate({
+          where: pendingFilter,
+          _sum: { sellerEarningsAmount: true },
+        });
+
+      const { _sum: { sellerEarningsAmount: revenue } } = await sumReleased({
+        createdAt: { gte: thisYear },
       });
 
-      const {
-        _sum: { price: dailyRevenue },
-      } = await prisma.order.aggregate({
-        where: {
-          gig: {
-            createdBy: {
-              id: req.userId,
-            },
-          },
-          isCompleted: true,
-          createdAt: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          },
-        },
-        _sum: {
-          price: true,
-        },
+      const { _sum: { sellerEarningsAmount: dailyRevenue } } = await sumReleased({
+        createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
       });
 
-      const {
-        _sum: { price: monthlyRevenue },
-      } = await prisma.order.aggregate({
-        where: {
-          gig: {
-            createdBy: {
-              id: req.userId,
-            },
-          },
-          isCompleted: true,
-          createdAt: {
-            gte: thisMonth,
-          },
-        },
-        _sum: {
-          price: true,
-        },
+      const { _sum: { sellerEarningsAmount: monthlyRevenue } } =
+        await sumReleased({
+          createdAt: { gte: thisMonth },
+        });
+
+      const { _sum: { sellerEarningsAmount: pendingPayouts } } =
+        await sumPending();
+
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { paypalEmail: true },
       });
+
       return res.status(200).json({
         dashboardData: {
           orders,
           gigs,
           unreadMessages,
-          dailyRevenue,
-          monthlyRevenue,
-          revenue,
+          dailyRevenue: dailyRevenue ?? 0,
+          monthlyRevenue: monthlyRevenue ?? 0,
+          revenue: revenue ?? 0,
+          pendingPayouts: pendingPayouts ?? 0,
+          paypalEmail: user?.paypalEmail || null,
+          hasPayoutEmail: Boolean(user?.paypalEmail),
         },
       });
     }

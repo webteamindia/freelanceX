@@ -15,6 +15,7 @@ export const GET_PUBLIC_PROFILE = `${AUTH_ROUTES}/profile`;
 export const GET_USER_INFO = `${AUTH_ROUTES}/get-user-info`;
 export const SET_USER_INFO = `${AUTH_ROUTES}/set-user-info`;
 export const SET_USER_IMAGE = `${AUTH_ROUTES}/set-user-image`;
+export const SET_PAYPAL_EMAIL = `${AUTH_ROUTES}/set-paypal-email`;
 export const FORGOT_PASSWORD_ROUTE = `${AUTH_ROUTES}/forgot-password`;
 export const RESET_PASSWORD_ROUTE = `${AUTH_ROUTES}/reset-password`;
 
@@ -29,6 +30,8 @@ export const FAVORITES_ROUTE = `${GIG_ROUTES}/favorites`;
 
 export const CREATE_ORDER = `${ORDER_ROUTES}/create`;
 export const ORDER_SUCCESS = `${ORDER_ROUTES}/success`;
+export const releasePayoutRoute = (orderId) =>
+  `${ORDER_ROUTES}/${orderId}/release-payout`;
 export const GET_BUYER_ORDERS = `${ORDER_ROUTES}/get-buyer-orders`;
 export const GET_SELLER_ORDERS = `${ORDER_ROUTES}/get-seller-orders`;
 
@@ -48,3 +51,5 @@ export const ADMIN_USERS_ROUTE = `${ADMIN_ROUTES}/users`;
 export const ADMIN_ORDERS_ROUTE = `${ADMIN_ROUTES}/orders`;
 export const ADMIN_TICKETS_ROUTE = `${ADMIN_ROUTES}/tickets`;
 export const ADMIN_GIGS_ROUTE = `${ADMIN_ROUTES}/gigs`;
+export const adminReleasePayoutRoute = (orderId) =>
+  `${ADMIN_ORDERS_ROUTE}/${orderId}/release-payout`;

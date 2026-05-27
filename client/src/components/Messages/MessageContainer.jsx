@@ -4,7 +4,7 @@ import { useCookies } from "react-cookie";
 import { FaRegPaperPlane } from "react-icons/fa";
 import { BsCheckAll } from "react-icons/bs";
 import { useStateProvider } from "../../context/StateContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GET_MESSAGES, SEND_MESSAGE } from "../../utils/constants";
 import { Comment } from "react-loader-spinner";
 
@@ -18,10 +18,11 @@ const MessageContainer = () => {
   const [messageText, setMessageText] = useState("");
   const [isLoading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const getMessages = async () => {
+  const fetchMessages = useCallback(
+    async (showLoader = false) => {
+      if (!orderId || !cookies.jwt) return;
       try {
-        setLoading(true);
+        if (showLoader) setLoading(true);
         const { data } = await axios.get(`${GET_MESSAGES}/${orderId}`, {
           headers: {
             Authorization: `Bearer ${cookies.jwt}`,
@@ -29,17 +30,22 @@ const MessageContainer = () => {
         });
         setMessages(data.messages);
         setReceiverId(data.receiverId);
-        setLoading(false);
       } catch (err) {
         console.log(err);
-        setLoading(false);
+      } finally {
+        if (showLoader) setLoading(false);
       }
-    };
+    },
+    [orderId, cookies.jwt]
+  );
 
-    if (orderId && userInfo) {
-      getMessages();
-    }
-  }, [orderId, userInfo]);
+  useEffect(() => {
+    if (!orderId || !userInfo) return;
+
+    fetchMessages(true);
+    const intervalId = setInterval(() => fetchMessages(false), 5000);
+    return () => clearInterval(intervalId);
+  }, [orderId, userInfo, fetchMessages]);
 
   function formatTime(timestamp) {
     const date = new Date(timestamp);
@@ -68,8 +74,9 @@ const MessageContainer = () => {
         }
       );
       if (response.status === 201) {
-        setMessages([...messages, response.data.message]);
+        setMessages((prev) => [...prev, response.data.message]);
         setMessageText("");
+        fetchMessages(false);
       }
     }
   };

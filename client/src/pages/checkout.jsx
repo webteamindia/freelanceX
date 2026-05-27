@@ -12,6 +12,7 @@ const PayPalCheckout = dynamic(() => import("../components/PayPalCheckout"), {
 
 const CheckoutPage = () => {
   const [orderId, setOrderId] = useState("");
+  const [orderSummary, setOrderSummary] = useState(null);
   const [cookies] = useCookies();
   const router = useRouter();
   const { gigId } = router.query;
@@ -30,6 +31,11 @@ const CheckoutPage = () => {
         );
         if (data?.orderId) {
           setOrderId(data.orderId);
+          setOrderSummary({
+            platformFee: data.platformFee,
+            sellerEarnings: data.sellerEarnings,
+            feePercent: data.feePercent,
+          });
           toast.success("Order ready — pay with PayPal");
         }
       } catch (err) {
@@ -51,8 +57,24 @@ const CheckoutPage = () => {
     <div className="min-h-[80vh] max-w-full mx-6 md:mx-20 flex flex-col gap-6 items-center py-10">
       <h1 className="text-3xl font-medium text-center">Complete your order</h1>
       <p className="text-zinc-400 text-center max-w-lg">
-        You will be charged in USD via PayPal. After payment, your order appears under buyer orders.
+        Pay with PayPal in USD. Your payment is held by ffiver until you approve the
+        delivery, then the seller receives their earnings to their PayPal account.
       </p>
+      {orderSummary && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-300 max-w-md w-full">
+          <p className="text-zinc-400 mb-2">Payment breakdown</p>
+          <p>
+            Seller receives:{" "}
+            <span className="text-white font-medium">
+              ${Number(orderSummary.sellerEarnings).toFixed(2)}
+            </span>
+          </p>
+          <p>
+            Platform fee ({orderSummary.feePercent}%): $
+            {Number(orderSummary.platformFee).toFixed(2)}
+          </p>
+        </div>
+      )}
       {!cookies.jwt ? (
         <p className="text-zinc-400">Sign in to continue to checkout.</p>
       ) : !gigId ? (

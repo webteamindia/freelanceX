@@ -63,12 +63,12 @@ const TermsPage = () => {
         <section className="space-y-2 text-sm text-zinc-300">
           <h2 className="text-lg font-medium text-white">5. Payments</h2>
           <p>
-            Payments for orders are processed through our payment partners.
-            Buyers are charged the full order amount at checkout. ffiver holds
-            funds in escrow until the order is marked as completed or cancelled
-            in line with our policies. Sellers receive payouts for completed
-            orders minus ffiver&apos;s service fee, as explained on our Pricing
-            page.
+            Buyers pay via PayPal at checkout. ffiver captures the payment to
+            the platform account and holds the seller&apos;s portion until the
+            buyer approves delivery in their orders. When approved, ffiver sends
+            the seller&apos;s earnings (minus our platform fee) to the PayPal
+            email on the seller&apos;s account. Refunds and disputes are handled
+            per our policies and PayPal&apos;s terms.
           </p>
         </section>
 

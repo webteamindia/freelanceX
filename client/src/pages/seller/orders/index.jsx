@@ -7,6 +7,7 @@ import { SiGooglemessages } from "react-icons/si";
 import { toast } from "react-toastify";
 import { useStateProvider } from "../../../context/StateContext.jsx";
 import { GET_SELLER_ORDERS } from "../../../utils/constants";
+import { getPayoutStatusLabel } from "../../../utils/orderStatus";
 
 const SellerOrdersPage = () => {
   const [cookies] = useCookies();
@@ -115,7 +116,10 @@ const SellerOrdersPage = () => {
                 Order Date
               </th>
               <th scope="col" className="px-6 py-3">
-                Status
+                Your earnings
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Payout
               </th>
               <th scope="col" className="px-6 py-3">
                 Send Message
@@ -124,6 +128,7 @@ const SellerOrdersPage = () => {
           </thead>
           <tbody>
             {filteredOrders.map((order) => {
+              const payout = getPayoutStatusLabel(order.payoutStatus);
               return (
                 <tr
                   className="bg-zinc-900 border border-zinc-800 border-b dark:bg-zinc-800 dark:border-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600"
@@ -154,8 +159,16 @@ const SellerOrdersPage = () => {
                   </td>
                   <td className="px-6 py-4">{order.createdAt.split("T")[0]}</td>
                   <td className="px-6 py-4">
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium">
-                      Paid
+                    $
+                    {Number(
+                      order.sellerEarningsAmount ?? order.gig?.price ?? 0
+                    ).toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${payout.className}`}
+                    >
+                      {payout.text}
                     </span>
                   </td>
                   <td className="px-6 py-4">

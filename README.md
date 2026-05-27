@@ -1,33 +1,82 @@
-# freelanceX : Freelance Marketplace
-with Next.js, Tailwind CSS, Node.js, Prisma, MongoDB
+# freelanceX (ffiver)
 
-freelanceX is a Freelance Marketplace web application developed as a 4th-semester project. It provides a platform for freelancers to showcase their skills and services by creating gigs, and clients can easily order these gigs for their projects. It enables freelancers to create gigs and clients to conveniently place orders for their desired services.
+Freelance marketplace built with Next.js, Tailwind CSS, Node.js, Express, Prisma, and MongoDB.
 
 ## Features
 
-- User Authentication
-- User Profiles
-- Gig Listings
-- Real-time Communication
-- Payment Integration (PayPal)
-- Ratings and Reviews
-- Search and Filters
-- Seller Dashboard
+- User authentication (email/password + Google)
+- Gigs, search, favorites, reviews
+- Orders and PayPal checkout
+- Buyer/seller messaging (auto-refresh every 5s)
+- Admin dashboard
+- Cloudinary image uploads
 
-## Tech Stack
+## Local development
 
-- Next.js
-- Tailwind CSS
-- Node.js
-- MongoDB with Prisma
+### 1. Server
 
-## Getting Started
+```bash
+cd server
+cp .env.template .env
+# Edit .env — set DATABASE_URL and other keys
+pnpm install
+pnpm run dev
+```
 
-1. Clone the repository and install dependencies.
-2. Start the development server.
-3. Visit `http://localhost:3000` in your web browser.
+API runs at `http://localhost:5001` by default.
 
+### 2. Client
 
-This project was developed as a part of the 4th semester and is not intended for commercial use.
+```bash
+cd client
+cp env.example .env.local
+# Edit .env.local — set NEXT_PUBLIC_SERVER_URL=http://localhost:5001
+pnpm install
+pnpm run dev
+```
 
-Feel free to explore the project, suggest improvements, and provide feedback. Happy freelancing with freelanceX! 🚀
+App runs at `http://localhost:3000`.
+
+### 3. Database
+
+Use MongoDB Atlas or a local instance. Run seed data optionally:
+
+```bash
+cd server && pnpm run seed
+```
+
+Promote an admin user in MongoDB: set `isAdmin: true` on your user document.
+
+## Environment variables
+
+| Location | Template file |
+|----------|----------------|
+| API | `server/.env.template` |
+| Web app | `client/env.example` |
+
+Production startup validates required server secrets. See [DEPLOYMENT.md](./DEPLOYMENT.md) for hosting steps.
+
+## Payments & seller payouts
+
+Buyers pay via PayPal; funds are held until the buyer approves delivery, then released to the seller's PayPal email. See [PAYMENTS.md](./PAYMENTS.md).
+
+## Health check
+
+`GET /api/health` — returns `{ ok, database }` when MongoDB is reachable.
+
+## Scripts
+
+| Command | Where | Description |
+|---------|-------|-------------|
+| `pnpm run dev` | server / client | Development |
+| `pnpm start` | server | Production API |
+| `pnpm run build` | client | Production frontend build |
+| `pnpm run seed` | server | Demo data |
+
+## CI
+
+GitHub Actions runs `prisma generate` on the server and `next build` on the client for pushes and PRs to `main`.
+
+## AdSense
+
+If using Google AdSense, replace the placeholder publisher id in `client/public/ads.txt` with your real `pub-` id.

@@ -2,8 +2,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
-import { ORDER_SUCCESS } from "../utils/constants";
-import axios from "axios";
+import { confirmOrderWithRetry } from "../utils/confirmOrder";
 
 const SuccessPage = () => {
   const router = useRouter();
@@ -18,19 +17,11 @@ const SuccessPage = () => {
     }
 
     const changeOrderStatus = async () => {
-      try {
-        await axios.put(
-          ORDER_SUCCESS,
-          { orderID: paypalOrderId },
-          {
-            headers: {
-              Authorization: `Bearer ${cookies.jwt}`,
-            },
-          }
+      const { ok } = await confirmOrderWithRetry(paypalOrderId, cookies.jwt);
+      if (!ok) {
+        toast.error(
+          "Payment received but we could not confirm your order. Check buyer orders or contact support."
         );
-      } catch (err) {
-        console.error(err);
-        toast.error("Something went wrong confirming your payment.");
       }
     };
 
@@ -46,7 +37,8 @@ const SuccessPage = () => {
   return (
     <div className="h-[80vh] flex items-center px-6 md:px-20 pt-20 flex-col text-center">
       <h1 className="text-2xl md:text-4xl">
-        Payment successful. You are being redirected to your orders.
+        Payment received. Funds are held until you approve delivery and release
+        payment to the seller. Redirecting to your orders…
       </h1>
       <p className="text-zinc-400 mt-4">Please do not close this page.</p>
     </div>

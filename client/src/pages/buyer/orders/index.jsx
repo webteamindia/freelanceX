@@ -6,7 +6,9 @@ import { useCookies } from "react-cookie";
 import { SiGooglemessages } from "react-icons/si";
 import { toast } from "react-toastify";
 import { useStateProvider } from "../../../context/StateContext.jsx";
+import ReleasePayoutButton from "../../../components/orders/ReleasePayoutButton";
 import { GET_BUYER_ORDERS } from "../../../utils/constants";
+import { getPayoutStatusLabel } from "../../../utils/orderStatus";
 
 const BuyerOrdersPage = () => {
   const [cookies] = useCookies();
@@ -115,15 +117,19 @@ const BuyerOrdersPage = () => {
                 Order Date
               </th>
               <th scope="col" className="px-6 py-3">
-                Status
+                Payout
               </th>
               <th scope="col" className="px-6 py-3">
-                Send Message
+                Actions
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Message
               </th>
             </tr>
           </thead>
           <tbody>
             {filteredOrders.map((order) => {
+              const payout = getPayoutStatusLabel(order.payoutStatus);
               return (
                 <tr
                   className="bg-zinc-900 border border-zinc-800 border-b dark:bg-zinc-800 dark:border-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600"
@@ -152,9 +158,21 @@ const BuyerOrdersPage = () => {
                   </td>
                   <td className="px-6 py-4">{order.createdAt.split("T")[0]}</td>
                   <td className="px-6 py-4">
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-medium">
-                      Completed
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${payout.className}`}
+                    >
+                      {payout.text}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <ReleasePayoutButton
+                      order={order}
+                      onReleased={(updated) => {
+                        setOrders((prev) =>
+                          prev.map((o) => (o.id === updated.id ? updated : o))
+                        );
+                      }}
+                    />
                   </td>
                   <td className="px-6 py-4">
                     <Link

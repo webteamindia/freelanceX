@@ -1,6 +1,18 @@
 import Link from "next/link";
 import React from "react";
 
+export async function getServerSideProps() {
+  if (process.env.NODE_ENV === "production") {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+  return { props: {} };
+}
+
 const DevPage = () => {
   const devLinks = [
     { href: "/forgot-password", label: "Forgot password" },

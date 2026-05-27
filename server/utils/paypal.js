@@ -117,14 +117,14 @@ export async function capturePayPalOrder(orderId) {
   if (res.ok) {
     const capture = data.purchase_units?.[0]?.payments?.captures?.[0];
     if (capture?.status === "COMPLETED") {
-      return { ok: true };
+      return { ok: true, order: data };
     }
     return { ok: false, error: "Capture did not complete" };
   }
 
   const existing = await getPayPalOrder(orderId);
   if (existing?.status === "COMPLETED") {
-    return { ok: true, alreadyCaptured: true };
+    return { ok: true, alreadyCaptured: true, order: existing };
   }
 
   const msg =
@@ -132,4 +132,78 @@ export async function capturePayPalOrder(orderId) {
     data?.details?.map((d) => `${d.issue}: ${d.description}`).join("; ") ||
     `PayPal capture failed (${res.status})`;
   return { ok: false, error: msg };
+}
+
+/**
+ * Send seller earnings via PayPal Payouts (platform balance → seller PayPal email).
+ * Requires Payouts enabled on your PayPal business account.
+ */
+export async function createPayPalPayout({
+  receiverEmail,
+  amount,
+  currencyCode = "USD",
+  note,
+  senderItemId,
+}) {
+  const token = await getAccessToken();
+  const batchId = `ffiver_${senderItemId}_${Date.now()}`;
+
+  const res = await fetch(`${getApiBase()}/v1/payments/payouts`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      sender_batch_header: {
+        sender_batch_id: batchId,
+        email_subject: "You received a payment from ffiver",
+        email_message:
+          note ||
+          "Your buyer approved the order. Funds have been sent to your PayPal account.",
+      },
+      items: [
+        {
+          recipient_type: "EMAIL",
+          amount: {
+            currency_code: currencyCode,
+            value: amount,
+          },
+          receiver: receiverEmail,
+          note: note || "ffiver order payout",
+          sender_item_id: String(senderItemId),
+        },
+      ],
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const msg =
+      data?.message ||
+      data?.details?.map((d) => d.issue || d.description).join("; ") ||
+      `PayPal payout failed (${res.status})`;
+    return { ok: false, error: msg };
+  }
+
+  return {
+    ok: true,
+    batchId: data.batch_header?.payout_batch_id || batchId,
+  };
+}
+
+/**
+ * Extract capture id and amount from a captured PayPal order payload.
+ */
+export function extractCaptureDetails(paypalOrderData) {
+  const capture =
+    paypalOrderData?.purchase_units?.[0]?.payments?.captures?.[0];
+  if (!capture) return null;
+  return {
+    captureId: capture.id,
+    amount: capture.amount?.value,
+    currency: capture.amount?.currency_code,
+    status: capture.status,
+  };
 }

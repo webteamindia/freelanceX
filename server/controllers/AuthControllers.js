@@ -5,6 +5,7 @@ const { Prisma } = pkg;
 import prisma from "../prisma/client.js";
 import { loginUser, registerUser, generatePassword } from "../services/authService.js";
 import { sendMail } from "../utils/mailer.js";
+import { isValidPaypalEmail } from "../utils/payments.js";
 
 const maxAge = 3 * 24 * 60 * 60;
 
@@ -288,6 +289,38 @@ export const oauthGoogle = async (req, res, next) => {
       user: { id: user.id, email: user.email },
       jwt: generateToken(user.email, user.id),
       message: "Google auth successful",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setPaypalEmail = async (req, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { paypalEmail } = req.body;
+    if (!isValidPaypalEmail(paypalEmail)) {
+      return res.status(400).json({
+        message: "A valid PayPal email address is required.",
+      });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { paypalEmail: paypalEmail.trim().toLowerCase() },
+      select: {
+        id: true,
+        email: true,
+        paypalEmail: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: "PayPal payout email saved.",
+      user,
     });
   } catch (err) {
     next(err);

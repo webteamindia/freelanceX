@@ -30,6 +30,7 @@ import {
   ADMIN_TICKETS_ROUTE,
   ADMIN_USERS_ROUTE,
   adminReleasePayoutRoute,
+  adminRefundRoute,
 } from "../../utils/constants";
 
 const TABS = [
@@ -238,6 +239,27 @@ const AdminPage = () => {
       setSelectedUser(data.user);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to load user.");
+    }
+  };
+
+  const adminProcessRefund = async (orderId, action) => {
+    let note = "Approved by admin";
+    if (action === "reject") {
+      const input = window.prompt("Rejection note (optional)");
+      if (input === null) return;
+      note = input || "Rejected by admin";
+    }
+
+    try {
+      await axios.post(
+        adminRefundRoute(orderId),
+        { action, note },
+        authConfig
+      );
+      toast.success(`Refund ${action === "approve" ? "approved" : "rejected"}`);
+      await loadAdminData(true);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Refund action failed");
     }
   };
 
@@ -638,12 +660,13 @@ const AdminPage = () => {
                     <th className="text-left p-3">Amounts</th>
                     <th className="text-left p-3">Payment</th>
                     <th className="text-left p-3">Payout</th>
+                    <th className="text-left p-3">Refund</th>
                     <th className="text-left p-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/60">
                   {filteredOrders.length === 0 ? (
-                    <EmptyRow colSpan={6} message="No orders match filters" />
+                    <EmptyRow colSpan={7} message="No orders match filters" />
                   ) : (
                     filteredOrders.map((order) => {
                       const ps = order.payoutStatus || "held";
@@ -705,14 +728,43 @@ const AdminPage = () => {
                             )}
                           </td>
                           <td className="p-3">
+                            <Badge
+                              className={
+                                order.refundStatus === "requested"
+                                  ? "bg-orange-500/15 text-orange-300 border-orange-500/30"
+                                  : "bg-zinc-800 text-zinc-500 border-zinc-700"
+                              }
+                            >
+                              {order.refundStatus || "none"}
+                            </Badge>
+                          </td>
+                          <td className="p-3 space-y-1">
                             {canRelease && (
                               <button
                                 type="button"
                                 onClick={() => adminReleasePayout(order.id)}
-                                className="text-xs px-2.5 py-1 rounded-lg bg-primary/20 text-primary hover:bg-primary/30"
+                                className="block text-xs px-2.5 py-1 rounded-lg bg-primary/20 text-primary hover:bg-primary/30"
                               >
                                 Force release
                               </button>
+                            )}
+                            {order.refundStatus === "requested" && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => adminProcessRefund(order.id, "approve")}
+                                  className="block text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300"
+                                >
+                                  Approve refund
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => adminProcessRefund(order.id, "reject")}
+                                  className="block text-xs px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300"
+                                >
+                                  Reject refund
+                                </button>
+                              </>
                             )}
                           </td>
                         </tr>

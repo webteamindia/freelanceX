@@ -4,10 +4,15 @@ import { validateProductionEnv } from "./utils/validate-env.js";
 
 validateProductionEnv();
 
+import http from "http";
 import app from "./app.js";
+import { createSocketServer } from "./socket/socketServer.js";
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+createSocketServer(server);
+
+server.listen(PORT, () => {
   console.log(`Server is listening at url: http://localhost:${PORT}`);
 });

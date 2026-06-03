@@ -15,6 +15,7 @@ import {
   updateUserRole,
   updateUserStatus,
 } from "../controllers/AdminController.js";
+import { adminProcessRefund } from "../controllers/RefundController.js";
 
 export const adminRoutes = Router();
 
@@ -28,6 +29,7 @@ adminRoutes.patch("/users/:userId/role", updateUserRole);
 adminRoutes.get("/orders", getAdminOrders);
 adminRoutes.patch("/orders/:orderId/status", updateOrderStatus);
 adminRoutes.post("/orders/:orderId/release-payout", adminReleaseOrderPayout);
+adminRoutes.post("/orders/:orderId/refund", adminProcessRefund);
 adminRoutes.get("/gigs", getAdminGigs);
 adminRoutes.delete("/gigs/:gigId", deleteGigAsAdmin);
 adminRoutes.get("/tickets", getAdminSupportTickets);

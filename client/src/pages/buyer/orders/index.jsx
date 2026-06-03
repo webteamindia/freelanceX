@@ -7,6 +7,7 @@ import { SiGooglemessages } from "react-icons/si";
 import { toast } from "react-toastify";
 import { useStateProvider } from "../../../context/StateContext.jsx";
 import ReleasePayoutButton from "../../../components/orders/ReleasePayoutButton";
+import RequestRefundButton from "../../../components/orders/RequestRefundButton";
 import { GET_BUYER_ORDERS } from "../../../utils/constants";
 import { getPayoutStatusLabel } from "../../../utils/orderStatus";
 
@@ -164,13 +165,22 @@ const BuyerOrdersPage = () => {
                       {payout.text}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 flex flex-col gap-2 items-start">
                     <ReleasePayoutButton
                       order={order}
                       onReleased={(updated) => {
                         setOrders((prev) =>
                           prev.map((o) => (o.id === updated.id ? updated : o))
                         );
+                      }}
+                    />
+                    <RequestRefundButton
+                      order={order}
+                      onUpdated={async () => {
+                        const { data } = await axios.get(GET_BUYER_ORDERS, {
+                          headers: { Authorization: `Bearer ${cookies.jwt}` },
+                        });
+                        setOrders(data.orders || []);
                       }}
                     />
                   </td>

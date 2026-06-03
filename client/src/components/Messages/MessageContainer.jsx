@@ -7,6 +7,7 @@ import { useStateProvider } from "../../context/StateContext";
 import { useCallback, useEffect, useState } from "react";
 import { GET_MESSAGES, SEND_MESSAGE } from "../../utils/constants";
 import { Comment } from "react-loader-spinner";
+import { useOrderSocket } from "../../hooks/useOrderSocket";
 
 const MessageContainer = () => {
   const [cookies] = useCookies();
@@ -17,6 +18,14 @@ const MessageContainer = () => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [isLoading, setLoading] = useState(false);
+  const [live, setLive] = useState(false);
+
+  const appendMessage = useCallback((msg) => {
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
+  }, []);
 
   const fetchMessages = useCallback(
     async (showLoader = false) => {
@@ -39,11 +48,20 @@ const MessageContainer = () => {
     [orderId, cookies.jwt]
   );
 
+  useOrderSocket({
+    orderId,
+    jwt: cookies.jwt,
+    onMessage: (msg) => {
+      setLive(true);
+      appendMessage(msg);
+    },
+  });
+
   useEffect(() => {
     if (!orderId || !userInfo) return;
 
     fetchMessages(true);
-    const intervalId = setInterval(() => fetchMessages(false), 5000);
+    const intervalId = setInterval(() => fetchMessages(false), 30000);
     return () => clearInterval(intervalId);
   }, [orderId, userInfo, fetchMessages]);
 
@@ -55,47 +73,45 @@ const MessageContainer = () => {
     hours %= 12;
     hours = hours || 12;
     minutes = minutes < 10 ? "0" + minutes : minutes;
-    const formattedTime = `${hours}:${minutes} ${ampm}`;
-    return formattedTime;
+    return `${hours}:${minutes} ${ampm}`;
   }
 
   const sendMessage = async () => {
-    if (messageText.length) {
-      const response = await axios.post(
-        `${SEND_MESSAGE}/${orderId}`,
-        {
-          message: messageText,
-          receiverId,
+    if (!messageText.length) return;
+    const response = await axios.post(
+      `${SEND_MESSAGE}/${orderId}`,
+      {
+        message: messageText,
+        receiverId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${cookies.jwt}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${cookies.jwt}`,
-          },
-        }
-      );
-      if (response.status === 201) {
-        setMessages((prev) => [...prev, response.data.message]);
-        setMessageText("");
-        fetchMessages(false);
       }
+    );
+    if (response.status === 201) {
+      appendMessage(response.data.message);
+      setMessageText("");
     }
   };
 
   return (
     <div className="h-[80vh]">
-      <div className="max-h-[80vh]   flex flex-col justify-center items-center">
+      <div className="max-h-[80vh] flex flex-col justify-center items-center">
         <div className="bg-white py-8 px-4 shadow-2xl sm:rounded-lg sm:px-10 w-[80vw] border flex flex-col">
-          <div className="mt-8">
-            <div className="space-y-4 h-[50vh] overflow-y-auto pr-4 ">
+          {live && (
+            <p className="text-xs text-emerald-600 mb-2">Live updates connected</p>
+          )}
+          <div className="mt-4">
+            <div className="space-y-4 h-[50vh] overflow-y-auto pr-4">
               {isLoading && (
-                <div className="flex justify-center items-center ">
+                <div className="flex justify-center items-center">
                   <Comment
                     visible={true}
                     height="80"
                     width="80"
                     ariaLabel="comment-loading"
-                    wrapperStyle={{}}
-                    wrapperClass="comment-wrapper"
                     color="#fff"
                     backgroundColor="#F4442E"
                   />
@@ -140,10 +156,11 @@ const MessageContainer = () => {
               placeholder="Type a message..."
               name="message"
               onChange={(e) => setMessageText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               value={messageText}
             />
             <button
-              type="submit"
+              type="button"
               className="bg-[#1DBF73] text-white rounded-full px-4 py-2"
               onClick={sendMessage}
             >

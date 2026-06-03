@@ -50,5 +50,28 @@ sequenceDiagram
 
 - `POST /api/orders/create` — blocks checkout if seller has no `paypalEmail`
 - `PUT /api/orders/success` — captures payment, sets `payoutStatus: held`
+- `GET /api/orders/payment-status/:paymentIntent` — buyer polls confirmation
 - `POST /api/orders/:orderId/release-payout` — buyer releases funds to seller
 - `POST /api/auth/set-paypal-email` — seller saves payout email
+- `POST /api/webhooks/paypal` — PayPal webhook (backup confirmation)
+
+### Webhook setup
+
+In PayPal Developer Dashboard → Webhooks, add:
+
+`https://your-api-domain.com/api/webhooks/paypal`
+
+Subscribe to at least:
+
+- `CHECKOUT.ORDER.APPROVED`
+- `PAYMENT.CAPTURE.COMPLETED`
+
+The handler re-verifies payment with PayPal’s API before marking the order paid.
+
+### Auto-release
+
+```bash
+AUTO_RELEASE_DAYS=14 pnpm run auto-release
+```
+
+Releases payouts still on `held` after N days (use a daily cron on your host).

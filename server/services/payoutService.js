@@ -1,6 +1,7 @@
 import prisma from "../prisma/client.js";
 import { createPayPalPayout } from "../utils/paypal.js";
 import { calculateOrderSplit } from "../utils/payments.js";
+import { notifyPayoutReleased } from "../utils/notifications.js";
 
 /**
  * Release seller earnings for a paid order (PayPal Payouts or dev simulation).
@@ -72,7 +73,22 @@ export async function executeSellerPayout(order) {
       payoutBatchId: batchId,
       payoutError: null,
     },
+    include: {
+      gig: {
+        select: {
+          title: true,
+          createdBy: { select: { email: true } },
+        },
+      },
+    },
   });
+
+  await notifyPayoutReleased(
+    updated,
+    updated.gig?.createdBy?.email
+  ).catch((err) =>
+    console.warn("[notifications] payout email failed:", err.message)
+  );
 
   return { ok: true, order: updated, sellerEarnings: payoutAmount, batchId };
 }

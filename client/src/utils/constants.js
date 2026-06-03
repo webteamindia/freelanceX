@@ -16,6 +16,9 @@ export const GET_USER_INFO = `${AUTH_ROUTES}/get-user-info`;
 export const SET_USER_INFO = `${AUTH_ROUTES}/set-user-info`;
 export const SET_USER_IMAGE = `${AUTH_ROUTES}/set-user-image`;
 export const SET_PAYPAL_EMAIL = `${AUTH_ROUTES}/set-paypal-email`;
+export const SET_NOTIFICATION_PREFS = `${AUTH_ROUTES}/set-notification-preferences`;
+export const RESEND_VERIFICATION_ROUTE = `${AUTH_ROUTES}/resend-verification`;
+export const VERIFY_EMAIL_ROUTE = `${AUTH_ROUTES}/verify-email`;
 export const FORGOT_PASSWORD_ROUTE = `${AUTH_ROUTES}/forgot-password`;
 export const RESET_PASSWORD_ROUTE = `${AUTH_ROUTES}/reset-password`;
 
@@ -30,8 +33,19 @@ export const FAVORITES_ROUTE = `${GIG_ROUTES}/favorites`;
 
 export const CREATE_ORDER = `${ORDER_ROUTES}/create`;
 export const ORDER_SUCCESS = `${ORDER_ROUTES}/success`;
+export const orderPaymentStatusRoute = (paymentIntent) =>
+  `${ORDER_ROUTES}/payment-status/${encodeURIComponent(paymentIntent)}`;
 export const releasePayoutRoute = (orderId) =>
   `${ORDER_ROUTES}/${orderId}/release-payout`;
+export const requestRefundRoute = (orderId) =>
+  `${ORDER_ROUTES}/${orderId}/request-refund`;
+export const adminRefundRoute = (orderId) =>
+  `${ADMIN_ORDERS_ROUTE}/${orderId}/refund`;
+
+export const SOCKET_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  process.env.NEXT_PUBLIC_SERVER_URL ||
+  "http://localhost:5001";
 export const GET_BUYER_ORDERS = `${ORDER_ROUTES}/get-buyer-orders`;
 export const GET_SELLER_ORDERS = `${ORDER_ROUTES}/get-seller-orders`;
 

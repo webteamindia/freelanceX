@@ -41,7 +41,10 @@ const authLimiter = rateLimit({
 });
 
 app.use("/api/auth", authLimiter);
-app.use("/api", apiLimiter);
+app.use("/api", (req, res, next) => {
+  if (req.path.startsWith("/webhooks")) return next();
+  return apiLimiter(req, res, next);
+});
 
 app.use(
   cors({

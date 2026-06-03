@@ -8,7 +8,12 @@ const ReleasePayoutButton = ({ order, onReleased }) => {
   const [cookies] = useCookies();
   const [loading, setLoading] = useState(false);
 
-  if (!order || order.payoutStatus === "released") {
+  if (!order || order.payoutStatus === "released" || order.payoutStatus === "refunded") {
+    return null;
+  }
+
+  const refund = order.refundStatus;
+  if (refund === "requested" || refund === "approved" || refund === "rejected") {
     return null;
   }
 

@@ -20,6 +20,11 @@ model User {
   isActive         Boolean    @default(true)
   /// PayPal email for receiving seller payouts (must match a PayPal account)
   paypalEmail      String?
+  emailVerified    Boolean    @default(false)
+  emailVerifyToken String?
+  emailVerifyExpiresAt DateTime?
+  notifyOrderEmails   Boolean @default(true)
+  notifyMessageEmails Boolean @default(true)
   createdAt        DateTime   @default(now())
   gigs             Gig[]
   orders           Order[]
@@ -66,6 +71,12 @@ model Order {
   paidOutAt           DateTime?
   payoutBatchId       String?
   payoutError         String?
+  /// none | requested | approved | rejected | completed
+  refundStatus        String     @default("none")
+  refundReason        String?
+  refundRequestedAt   DateTime?
+  refundProcessedAt   DateTime?
+  refundNote          String?
   gig                 Gig        @relation(fields: [gigId], references: [id])
   gigId               String     @db.ObjectId
   price               Int

@@ -15,7 +15,7 @@ const HowItWorksPage = () => {
     "Get discovered by buyers searching for your skills.",
     "Receive orders and communicate with buyers in the order thread.",
     "Deliver your work and request revisions if needed.",
-    "Get paid when the buyer approves. Withdraw to your bank or PayPal.",
+    "Get paid to your PayPal when the buyer approves the order.",
   ];
 
   return (

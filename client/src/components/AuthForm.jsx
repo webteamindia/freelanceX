@@ -48,17 +48,28 @@ const AuthForm = ({ type }) => {
         return;
       }
 
-      const {
-        data: { user, jwt },
-      } = await axios.post(
+      const { data } = await axios.post(
         type === "login" ? LOGIN_ROUTE : SIGNUP_ROUTE,
         values,
         { withCredentials: true }
       );
+      const { user, jwt, message, verificationSent } = data;
+
       setCookies("jwt", jwt, authCookieOptions);
       if (user) {
         dispatch({ type: reducerCases.SET_USER, userInfo: user });
-        toast.success(type === "login" ? "Welcome back!" : "Account created successfully!");
+        if (type === "signup") {
+          if (verificationSent) {
+            toast.info(
+              message ||
+                "Account created. Check your email to verify your address."
+            );
+          } else {
+            toast.success(message || "Account created successfully!");
+          }
+        } else {
+          toast.success("Welcome back!");
+        }
         router.push("/");
       }
       setLoading(false);
@@ -67,6 +78,13 @@ const AuthForm = ({ type }) => {
       if (axios.isAxiosError(err)) {
         const resp = err.response;
         const data = resp?.data;
+
+        if (data?.code === "EMAIL_NOT_VERIFIED") {
+          toast.error(data.message || "Please verify your email before signing in.");
+          setLoading(false);
+          return;
+        }
+
         const message =
           typeof data === "string"
             ? data

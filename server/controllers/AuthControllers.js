@@ -6,6 +6,11 @@ import prisma from "../prisma/client.js";
 import { loginUser, registerUser, generatePassword } from "../services/authService.js";
 import { sendMail } from "../utils/mailer.js";
 import { isValidPaypalEmail } from "../utils/payments.js";
+import {
+  createAndSendVerificationEmail,
+  verifyEmailToken,
+  requireEmailVerificationEnabled,
+} from "../services/emailVerificationService.js";
 
 const maxAge = 3 * 24 * 60 * 60;
 
@@ -21,9 +26,25 @@ export const signup = async (req, res, next) => {
 
     const user = await registerUser({ email, password });
 
+    let verificationSent = false;
+    try {
+      await createAndSendVerificationEmail(user);
+      verificationSent = true;
+    } catch (mailErr) {
+      console.warn("[auth] verification email failed:", mailErr.message);
+    }
+
     return res.status(200).json({
-      user: { id: user.id, email: user.email },
+      user: {
+        id: user.id,
+        email: user.email,
+        emailVerified: false,
+      },
       jwt: generateToken(email, user.id),
+      verificationSent,
+      message: verificationSent
+        ? "Account created. Check your email to verify your address."
+        : "Account created.",
     });
   } catch (err) {
     next(err);
@@ -34,8 +55,21 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await loginUser({ email, password });
+
+    if (requireEmailVerificationEnabled() && !user.emailVerified) {
+      return res.status(403).json({
+        message: "Please verify your email before signing in.",
+        code: "EMAIL_NOT_VERIFIED",
+        email: user.email,
+      });
+    }
+
     return res.status(200).json({
-      user: { id: user.id, email: user.email },
+      user: {
+        id: user.id,
+        email: user.email,
+        emailVerified: user.emailVerified,
+      },
       jwt: generateToken(email, user.id),
       message: "Login successful",
     });
@@ -277,7 +311,13 @@ export const oauthGoogle = async (req, res, next) => {
           username: usernameCandidate,
           fullName: name || null,
           isProfileInfoSet: !!name,
+          emailVerified: true,
         },
+      });
+    } else if (!user.emailVerified) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
       });
     }
 
@@ -289,6 +329,85 @@ export const oauthGoogle = async (req, res, next) => {
       user: { id: user.id, email: user.email },
       jwt: generateToken(user.email, user.id),
       message: "Google auth successful",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const token = req.query.token || req.body?.token;
+    const result = await verifyEmailToken(token);
+
+    if (!result.ok) {
+      return res.status(400).json({ message: result.error });
+    }
+
+    return res.status(200).json({
+      message: "Email verified successfully. You can sign in now.",
+      email: result.email,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.emailVerified) {
+      return res.status(200).json({ message: "Email is already verified." });
+    }
+
+    await createAndSendVerificationEmail(user);
+    return res.status(200).json({ message: "Verification email sent." });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setNotificationPreferences = async (req, res, next) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { notifyOrderEmails, notifyMessageEmails } = req.body;
+    const data = {};
+
+    if (typeof notifyOrderEmails === "boolean") {
+      data.notifyOrderEmails = notifyOrderEmails;
+    }
+    if (typeof notifyMessageEmails === "boolean") {
+      data.notifyMessageEmails = notifyMessageEmails;
+    }
+
+    if (!Object.keys(data).length) {
+      return res.status(400).json({
+        message: "Provide notifyOrderEmails and/or notifyMessageEmails booleans.",
+      });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data,
+      select: {
+        notifyOrderEmails: true,
+        notifyMessageEmails: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Notification preferences saved.",
+      preferences: user,
     });
   } catch (err) {
     next(err);

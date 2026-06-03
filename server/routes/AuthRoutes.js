@@ -11,11 +11,16 @@ import {
   oauthGoogle,
   getPublicProfile,
   setPaypalEmail,
+  verifyEmail,
+  resendVerificationEmail,
+  setNotificationPreferences,
 } from "../controllers/AuthControllers.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 
 const authRoutes = Router();
 
+authRoutes.get("/verify-email", verifyEmail);
+authRoutes.post("/verify-email", verifyEmail);
 authRoutes.post("/signup", signup);
 authRoutes.post("/login", login);
 authRoutes.post("/oauth-google", oauthGoogle);
@@ -25,6 +30,12 @@ authRoutes.post("/get-user-info", verifyToken, getUserInfo);
 authRoutes.get("/profile/:username", getPublicProfile);
 authRoutes.post("/set-user-info", verifyToken, setUserInfo);
 authRoutes.post("/set-paypal-email", verifyToken, setPaypalEmail);
+authRoutes.post("/resend-verification", verifyToken, resendVerificationEmail);
+authRoutes.post(
+  "/set-notification-preferences",
+  verifyToken,
+  setNotificationPreferences
+);
 
 authRoutes.post(
   "/set-user-image",

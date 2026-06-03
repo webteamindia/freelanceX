@@ -64,6 +64,8 @@ In Google Cloud Console, add authorized redirect URI:
 3. Switch both server and client to **live** credentials and `PAYPAL_MODE=live` for production.
 4. Enable **Payouts** on your PayPal business account (required to pay sellers).
 5. Set `PLATFORM_FEE_PERCENT` (default `10`) on the API.
+6. Register webhook URL: `https://your-api.com/api/webhooks/paypal` (events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`).
+7. Optional cron: `pnpm run auto-release` with `AUTO_RELEASE_DAYS=14`.
 
 ### Payment flow
 

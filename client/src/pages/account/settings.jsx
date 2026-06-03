@@ -3,6 +3,8 @@ import axios from "axios";
 import { useCookies } from "react-cookie";
 import {
   GET_USER_INFO,
+  RESEND_VERIFICATION_ROUTE,
+  SET_NOTIFICATION_PREFS,
   SET_PAYPAL_EMAIL,
   SET_USER_INFO,
 } from "../../utils/constants";
@@ -15,6 +17,9 @@ const AccountSettingsPage = () => {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [paypalEmail, setPaypalEmail] = useState("");
+  const [emailVerified, setEmailVerified] = useState(true);
+  const [notifyOrders, setNotifyOrders] = useState(true);
+  const [notifyMessages, setNotifyMessages] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +46,9 @@ const AccountSettingsPage = () => {
         setUsername(user.username || "");
         setBio(user.description || "");
         setPaypalEmail(user.paypalEmail || "");
+        setEmailVerified(user.emailVerified !== false);
+        setNotifyOrders(user.notifyOrderEmails !== false);
+        setNotifyMessages(user.notifyMessageEmails !== false);
       } catch (err) {
         setError("Could not load your profile. Please try again.");
       } finally {
@@ -76,6 +84,45 @@ const AccountSettingsPage = () => {
         err.response?.data?.message ||
           "Could not save PayPal email. Please check the address and try again."
       );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    setError("");
+    setSuccess("");
+    try {
+      setSaving(true);
+      await axios.post(
+        SET_NOTIFICATION_PREFS,
+        {
+          notifyOrderEmails: notifyOrders,
+          notifyMessageEmails: notifyMessages,
+        },
+        {
+          headers: { Authorization: cookies.jwt ? `Bearer ${cookies.jwt}` : "" },
+        }
+      );
+      setSuccess("Notification preferences saved.");
+    } catch (err) {
+      setError("Could not save notification preferences.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      setSaving(true);
+      const { data } = await axios.post(
+        RESEND_VERIFICATION_ROUTE,
+        {},
+        { headers: { Authorization: `Bearer ${cookies.jwt}` } }
+      );
+      setSuccess(data.message || "Verification email sent.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not send verification email.");
     } finally {
       setSaving(false);
     }
@@ -223,23 +270,59 @@ const AccountSettingsPage = () => {
         </section>
 
         <section className="space-y-4 border-t pt-6">
-          <h2 className="text-lg font-medium text-white">
-            Notifications
-          </h2>
+          <h2 className="text-lg font-medium text-white">Email verification</h2>
+          {emailVerified ? (
+            <p className="text-sm text-emerald-400">Your email is verified.</p>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-amber-400">
+                Please verify your email to place orders (when enforcement is enabled).
+              </p>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={saving}
+                className="text-sm px-3 py-1.5 rounded-md bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+              >
+                Resend verification email
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-4 border-t pt-6">
+          <h2 className="text-lg font-medium text-white">Notifications</h2>
+          <p className="text-sm text-zinc-400">
+            Email alerts when SMTP is configured on the server.
+          </p>
           <div className="space-y-2">
             <label className="flex items-center gap-3">
-              <input type="checkbox" className="h-4 w-4" />
-              <span className="text-sm text-zinc-300">
-                Email me about new messages
-              </span>
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={notifyOrders}
+                onChange={(e) => setNotifyOrders(e.target.checked)}
+              />
+              <span className="text-sm text-zinc-300">Order & payout updates</span>
             </label>
             <label className="flex items-center gap-3">
-              <input type="checkbox" className="h-4 w-4" />
-              <span className="text-sm text-zinc-300">
-                Email me about order updates
-              </span>
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={notifyMessages}
+                onChange={(e) => setNotifyMessages(e.target.checked)}
+              />
+              <span className="text-sm text-zinc-300">New messages</span>
             </label>
           </div>
+          <button
+            type="button"
+            onClick={handleSaveNotifications}
+            disabled={saving}
+            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-zinc-700 hover:bg-zinc-600"
+          >
+            Save notification preferences
+          </button>
         </section>
         <div className="pt-4">
           <button

@@ -6,6 +6,7 @@ import { messageRoutes } from "./MessagesRoutes.js";
 import { orderRoutes } from "./OrderRoutes.js";
 import { supportRoutes } from "./SupportRoutes.js";
 import { adminRoutes } from "./AdminRoutes.js";
+import { webhookRoutes } from "./WebhookRoutes.js";
 import express from "express";
 import { oauthGoogle } from "../controllers/AuthControllers.js";
 import prisma from "../prisma/client.js";
@@ -38,6 +39,8 @@ router.use("/uploads", express.static("uploads"));
 
 // Direct mount for Google OAuth bridge to avoid routing edge-cases.
 router.post("/api/auth/oauth-google", oauthGoogle);
+
+router.use("/api/webhooks", webhookRoutes);
 
 router.use("/api/auth", authRoutes);
 router.use("/api/gigs", gigRoutes);

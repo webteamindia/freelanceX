@@ -1,15 +1,15 @@
 import prisma from "../prisma/client.js";
-import {
-  createPayPalCheckoutOrder,
-  capturePayPalOrder,
-  getPayPalOrder,
-  extractCaptureDetails,
-} from "../utils/paypal.js";
+import { createPayPalCheckoutOrder } from "../utils/paypal.js";
 import { calculateOrderSplit } from "../utils/payments.js";
 import {
   executeSellerPayout,
   loadOrderForPayout,
 } from "../services/payoutService.js";
+import {
+  completeOrderFromPayPal,
+  getOrderPaymentStatus,
+} from "../services/orderPaymentService.js";
+import { assertUserEmailVerified } from "../services/emailVerificationService.js";
 
 const orderInclude = {
   gig: {
@@ -38,6 +38,14 @@ const orderInclude = {
 
 export const createOrder = async (req, res, next) => {
   try {
+    const emailOk = await assertUserEmailVerified(req.userId);
+    if (!emailOk) {
+      return res.status(403).json({
+        message: "Verify your email before placing orders.",
+        code: "EMAIL_NOT_VERIFIED",
+      });
+    }
+
     if (!req.body.gigId) {
       return res.status(400).send("GigId is required.");
     }
@@ -121,36 +129,46 @@ export const confirmOrder = async (req, res, next) => {
       return res.status(403).send("Forbidden.");
     }
 
-    if (order.isCompleted) {
-      return res.status(200).json({
-        message: "Order already confirmed.",
-        payoutStatus: order.payoutStatus,
-      });
-    }
+    const result = await completeOrderFromPayPal(orderID);
 
-    const capture = await capturePayPalOrder(orderID);
-    if (!capture.ok) {
+    if (!result.ok) {
       return res
         .status(502)
-        .json({ message: capture.error || "Payment capture failed." });
+        .json({ message: result.error || "Payment capture failed." });
     }
 
-    const paypalOrder =
-      capture.order || (await getPayPalOrder(orderID)) || null;
-    const captureDetails = extractCaptureDetails(paypalOrder);
-
-    await prisma.order.update({
-      where: { paymentIntent: orderID },
-      data: {
-        isCompleted: true,
-        payoutStatus: order.payoutStatus === "released" ? "released" : "held",
-        paypalCaptureId: captureDetails?.captureId || null,
-      },
+    return res.status(200).json({
+      message: result.alreadyCompleted
+        ? "Order already confirmed."
+        : "Payment received. Funds are held until you approve delivery.",
+      payoutStatus: result.payoutStatus || "held",
     });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send("Internal Server Error.");
+  }
+};
+
+export const getPaymentStatus = async (req, res, next) => {
+  try {
+    const { paymentIntent } = req.params;
+    if (!paymentIntent) {
+      return res.status(400).json({ message: "paymentIntent is required" });
+    }
+
+    const order = await getOrderPaymentStatus(paymentIntent);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.buyerId !== req.userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     return res.status(200).json({
-      message: "Payment received. Funds are held until you approve delivery.",
-      payoutStatus: "held",
+      isCompleted: order.isCompleted,
+      payoutStatus: order.payoutStatus,
+      orderId: order.id,
     });
   } catch (err) {
     console.error(err);
@@ -176,6 +194,16 @@ export const releasePayoutToSeller = async (req, res, next) => {
 
     if (order.buyerId !== req.userId) {
       return res.status(403).json({ message: "Only the buyer can release payment." });
+    }
+
+    if (
+      order.refundStatus === "requested" ||
+      order.refundStatus === "approved" ||
+      order.payoutStatus === "refunded"
+    ) {
+      return res.status(400).json({
+        message: "Cannot release payment while a refund is in progress.",
+      });
     }
 
     const result = await executeSellerPayout(order);

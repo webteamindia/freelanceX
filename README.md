@@ -73,6 +73,18 @@ Buyers pay via PayPal; funds are held until the buyer approves delivery, then re
 | `pnpm run build` | client | Production frontend build |
 | `pnpm run seed` | server | Demo data |
 
+## Smoke test
+
+With the API running and MongoDB connected:
+
+```bash
+cd server
+PAYPAL_SIMULATE_PAYOUTS=true pnpm run dev   # terminal 1
+pnpm run smoke                              # terminal 2
+```
+
+See [server/scripts/SMOKE_TEST.md](./server/scripts/SMOKE_TEST.md) and [REMAINING.md](./REMAINING.md).
+
 ## CI
 
 GitHub Actions runs `prisma generate` on the server and `next build` on the client for pushes and PRs to `main`.

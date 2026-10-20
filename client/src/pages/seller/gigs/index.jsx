@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { GET_ALL_USER_GIGS_ROUTE } from "../../../utils/constants";
+import {
+  DELETE_GIG_ROUTE,
+  GET_ALL_USER_GIGS_ROUTE,
+} from "../../../utils/constants";
 import axios from "axios";
 import Link from "next/link";
 import { useCookies } from "react-cookie";
+import { toast } from "react-toastify";
 
 const index = () => {
   const [cookies] = useCookies();
   const [gigs, setGigs] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const getUserGigs = async () => {
@@ -16,14 +21,33 @@ const index = () => {
             Authorization: `Bearer ${cookies.jwt}`,
           },
         });
-        console.log(data);
         setGigs(data.gigs);
       } catch (err) {
         console.log(err);
       }
     };
     getUserGigs();
-  }, []);
+  }, [cookies.jwt]);
+
+  const deleteGig = async (gigId, title) => {
+    if (!window.confirm(`Delete gig “${title}”? This cannot be undone.`)) {
+      return;
+    }
+    setDeletingId(gigId);
+    try {
+      await axios.delete(`${DELETE_GIG_ROUTE}/${gigId}`, {
+        headers: { Authorization: `Bearer ${cookies.jwt}` },
+      });
+      setGigs((prev) => prev.filter((g) => g.id !== gigId));
+      toast.success("Gig deleted");
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to delete gig."
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="min-h-[80vh] my-10 mt-0 px-32 ">
@@ -45,14 +69,17 @@ const index = () => {
                 Price
               </th>
               <th scope="col" className="px-6 py-3">
-                <span className="sr-only">Edit</span>
+                <span className="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
           <tbody>
             {gigs.map(({ title, category, deliveryTime, price, id }) => {
               return (
-                <tr className="bg-zinc-900 border border-zinc-800 border-b dark:bg-zinc-800 dark:border-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600">
+                <tr
+                  key={id}
+                  className="bg-zinc-900 border border-zinc-800 border-b dark:bg-zinc-800 dark:border-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600"
+                >
                   <th
                     scope="row"
                     className="px-6 py-4 font-medium text-white whitespace-nowrap dark:text-white"
@@ -62,13 +89,21 @@ const index = () => {
                   <td className="px-6 py-4">{category}</td>
                   <td className="px-6 py-4">{deliveryTime} Days</td>
                   <td className="px-6 py-4">$ {price}</td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right whitespace-nowrap">
                     <Link
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-4"
                       href={`/seller/gigs/${id}`}
                     >
                       Edit
                     </Link>
+                    <button
+                      type="button"
+                      disabled={deletingId === id}
+                      onClick={() => deleteGig(id, title)}
+                      className="font-medium text-red-400 hover:text-red-300 hover:underline disabled:opacity-50"
+                    >
+                      {deletingId === id ? "Deleting…" : "Delete"}
+                    </button>
                   </td>
                 </tr>
               );

@@ -5,6 +5,7 @@ Last updated after refunds, email verification, WebSockets, and Playwright E2E. 
 ## Done recently
 
 - PayPal checkout + hold → buyer approve → seller payout (PayPal Payouts)
+- **`PAYPAL_SIMULATE_CHECKOUT=true`** — local payment intent + Simulate payment button (no PayPal API)
 - Seller PayPal email in account settings
 - Admin dashboard (tabs, payouts, force-release, refund approve/reject)
 - Production env validation, rate limits, health check
@@ -16,6 +17,7 @@ Last updated after refunds, email verification, WebSockets, and Playwright E2E. 
 - Buyer refund requests + admin refund workflow
 - Socket.IO real-time messaging (`useOrderSocket` + 30s fallback poll)
 - Playwright E2E (`client/e2e/`, `pnpm run test:e2e`)
+- Seller delete own gig, self-purchase block, category browse wired to search, footer/nav polish
 
 ## Before production launch
 
@@ -60,9 +62,9 @@ The smoke test covers **API flows** against a running server. It does **not**:
 ## Quick commands
 
 ```bash
-# Terminal 1 — API (with simulated payouts for smoke)
+# Terminal 1 — API (simulated checkout + payouts for local/smoke)
 cd server
-PAYPAL_SIMULATE_PAYOUTS=true pnpm run dev
+PAYPAL_SIMULATE_CHECKOUT=true PAYPAL_SIMULATE_PAYOUTS=true pnpm run dev
 
 # Terminal 2 — smoke test
 cd server

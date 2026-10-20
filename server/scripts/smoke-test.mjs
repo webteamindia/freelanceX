@@ -438,12 +438,11 @@ async function main() {
         data: {
           gigId: state.gigId,
           buyerId: state.buyer.id,
-          sellerId: state.seller.id,
           price: 49,
           isCompleted: true,
           paymentIntent: `smoke-refund-${Date.now()}`,
-          paymentStatus: "paid",
           payoutStatus: "held",
+          refundStatus: "none",
           platformFeeAmount: 1,
           sellerEarningsAmount: 9,
         },
@@ -468,7 +467,11 @@ async function main() {
 
       await prisma.order.update({
         where: { id: heldOrder.id },
-        data: { refundStatus: null, refundReason: null, refundRequestedAt: null },
+        data: {
+          refundStatus: "none",
+          refundReason: null,
+          refundRequestedAt: null,
+        },
       });
 
       const req2 = await api.post(`/api/orders/${heldOrder.id}/request-refund`, {

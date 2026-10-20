@@ -12,6 +12,8 @@ cloudinary.config({
   api_secret: Env.CLOUDINARY_API_SECRET,
 });
 
+export { cloudinary };
+
 const STORAGE_PARAMS = {
   folder: "freelanceX",
   allowed_formats: ["jpg", "png", "jpeg"],

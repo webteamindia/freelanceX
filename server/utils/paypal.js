@@ -1,7 +1,10 @@
 /**
  * PayPal REST v2 (OAuth + Orders). Uses PAYPAL_CLIENT_ID + PAYPAL_CLIENT_SECRET.
  * Set PAYPAL_MODE=live for production; defaults to sandbox.
+ * Set PAYPAL_SIMULATE_CHECKOUT=true (non-production) to skip PayPal create/capture.
  */
+
+const SIM_CHECKOUT_PREFIX = "sim_checkout_";
 
 const getApiBase = () =>
   process.env.PAYPAL_MODE === "live"
@@ -10,6 +13,27 @@ const getApiBase = () =>
 
 let cachedToken = null;
 let tokenExpiresAt = 0;
+
+/** Local checkout without PayPal API (dev / smoke). Never enabled in production. */
+export function isSimulateCheckoutEnabled() {
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.PAYPAL_SIMULATE_CHECKOUT === "true"
+  );
+}
+
+export function isSimulatedCheckoutOrderId(orderId) {
+  return typeof orderId === "string" && orderId.startsWith(SIM_CHECKOUT_PREFIX);
+}
+
+/**
+ * Create a local payment-intent id (no PayPal API).
+ * @param {{ value: string, gigId: string }} opts
+ */
+export function createSimulatedCheckoutOrder({ value, gigId }) {
+  const suffix = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  return `${SIM_CHECKOUT_PREFIX}${gigId}_${value}_${suffix}`;
+}
 
 async function getAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID;

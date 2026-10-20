@@ -3,11 +3,13 @@ import {
   capturePayPalOrder,
   getPayPalOrder,
   extractCaptureDetails,
+  isSimulatedCheckoutOrderId,
 } from "../utils/paypal.js";
 import { notifyOrderPaid } from "../utils/notifications.js";
 
 /**
  * Mark order paid after PayPal capture (idempotent). Used by buyer confirm + webhooks.
+ * Simulated checkout intents (sim_checkout_*) skip the PayPal API.
  */
 export async function completeOrderFromPayPal(paymentIntent) {
   const order = await prisma.order.findUnique({
@@ -38,24 +40,35 @@ export async function completeOrderFromPayPal(paymentIntent) {
     };
   }
 
-  const capture = await capturePayPalOrder(paymentIntent);
-  if (!capture.ok) {
-    const existing = await getPayPalOrder(paymentIntent);
-    if (existing?.status !== "COMPLETED") {
-      return { ok: false, error: capture.error || "Capture failed", code: "CAPTURE_FAILED" };
-    }
-  }
+  const simulated = isSimulatedCheckoutOrderId(paymentIntent);
+  let captureDetails = null;
 
-  const paypalOrder =
-    capture.order || (await getPayPalOrder(paymentIntent)) || null;
-  const captureDetails = extractCaptureDetails(paypalOrder);
+  if (!simulated) {
+    const capture = await capturePayPalOrder(paymentIntent);
+    if (!capture.ok) {
+      const existing = await getPayPalOrder(paymentIntent);
+      if (existing?.status !== "COMPLETED") {
+        return {
+          ok: false,
+          error: capture.error || "Capture failed",
+          code: "CAPTURE_FAILED",
+        };
+      }
+    }
+
+    const paypalOrder =
+      capture.order || (await getPayPalOrder(paymentIntent)) || null;
+    captureDetails = extractCaptureDetails(paypalOrder);
+  }
 
   const updated = await prisma.order.update({
     where: { paymentIntent },
     data: {
       isCompleted: true,
       payoutStatus: order.payoutStatus === "released" ? "released" : "held",
-      paypalCaptureId: captureDetails?.captureId || order.paypalCaptureId,
+      paypalCaptureId: simulated
+        ? order.paypalCaptureId || `sim_capture_${order.id}`
+        : captureDetails?.captureId || order.paypalCaptureId,
     },
     include: {
       buyer: { select: { email: true, fullName: true } },
@@ -76,6 +89,7 @@ export async function completeOrderFromPayPal(paymentIntent) {
     ok: true,
     order: updated,
     payoutStatus: updated.payoutStatus,
+    simulated,
   };
 }
 

@@ -1,5 +1,9 @@
 import prisma from "../prisma/client.js";
-import { createPayPalCheckoutOrder } from "../utils/paypal.js";
+import {
+  createPayPalCheckoutOrder,
+  createSimulatedCheckoutOrder,
+  isSimulateCheckoutEnabled,
+} from "../utils/paypal.js";
 import { calculateOrderSplit } from "../utils/payments.js";
 import {
   executeSellerPayout,
@@ -64,6 +68,13 @@ export const createOrder = async (req, res, next) => {
       return res.status(404).send("Gig not found.");
     }
 
+    if (gig.userId === req.userId) {
+      return res.status(400).json({
+        message: "You cannot purchase your own gig.",
+        code: "SELF_PURCHASE",
+      });
+    }
+
     if (!gig.createdBy?.paypalEmail) {
       return res.status(400).json({
         message:
@@ -79,10 +90,13 @@ export const createOrder = async (req, res, next) => {
 
     const split = calculateOrderSplit(amountNum);
     const value = amountNum.toFixed(2);
-    const paypalOrderId = await createPayPalCheckoutOrder({
-      value,
-      gigId,
-    });
+    const simulate = isSimulateCheckoutEnabled();
+    const paypalOrderId = simulate
+      ? createSimulatedCheckoutOrder({ value, gigId })
+      : await createPayPalCheckoutOrder({
+          value,
+          gigId,
+        });
 
     await prisma.order.create({
       data: {
@@ -101,6 +115,7 @@ export const createOrder = async (req, res, next) => {
       platformFee: split.platformFee,
       sellerEarnings: split.sellerEarnings,
       feePercent: split.feePercent,
+      simulate,
     });
   } catch (err) {
     console.error(err);

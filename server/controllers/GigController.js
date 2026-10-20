@@ -1,4 +1,5 @@
 import prisma from "../prisma/client.js";
+import { cloudinary } from "../config/cloudinary.config.js";
 import SearchService from "../services/searchService.js";
 import { apiLog } from "../utils/logger.js";
 
@@ -110,56 +111,104 @@ export const getGigById = async (req, res, next) => {
 
 export const updateGig = async (req, res, next) => {
   try {
-    if (req.files) {
-      const imageUrls = req.files.map((file) => file.path);
-      if (req.query) {
-        const {
-          title,
-          description,
-          category,
-          features,
-          price,
-          revisions,
-          time,
-          shortDesc,
-        } = req.query;
+    if (!req.query) {
+      return res.status(400).send("All properties are required.");
+    }
 
-        const oldData = await prisma.gig.findUnique({
-          where: { id: req.params.gigId },
-        });
+    const {
+      title,
+      description,
+      category,
+      features,
+      price,
+      revisions,
+      time,
+      shortDesc,
+    } = req.query;
 
-        // Delete old images from Cloudinary
-        if (oldData?.images?.length > 0) {
-          for (const imageUrl of oldData.images) {
-            // Extract public_id from Cloudinary URL
-            const publicId = imageUrl.split("/").pop().split(".")[0];
-            await cloudinary.uploader.destroy(`freelanceX/${publicId}`);
-          }
+    if (!title || !description || !category || !shortDesc) {
+      return res.status(400).send("All properties are required.");
+    }
+
+    const oldData = await prisma.gig.findUnique({
+      where: { id: req.params.gigId },
+    });
+
+    if (!oldData) {
+      return res.status(404).send("Gig not found.");
+    }
+
+    if (oldData.userId !== req.userId) {
+      return res.status(403).send("Forbidden.");
+    }
+
+    const newImages =
+      req.files?.length > 0 ? req.files.map((file) => file.path) : null;
+
+    if (newImages && oldData.images?.length > 0) {
+      for (const imageUrl of oldData.images) {
+        try {
+          const publicId = imageUrl.split("/").pop().split(".")[0];
+          await cloudinary.uploader.destroy(`freelanceX/${publicId}`);
+        } catch (destroyErr) {
+          console.warn("[cloudinary] destroy failed:", destroyErr.message);
         }
-
-        const gig = await prisma.gig.update({
-          where: { id: req.params.gigId },
-          data: {
-            title,
-            description,
-            deliveryTime: parseInt(time),
-            category,
-            features,
-            price: parseInt(price),
-            shortDesc,
-            revisions: parseInt(revisions),
-            createdBy: { connect: { id: req.userId } },
-            images: imageUrls,
-          },
-        });
-
-        return res.status(200).send("Successfuly updated the gig.");
       }
     }
-    return res.status(400).send("All properties are required.");
+
+    await prisma.gig.update({
+      where: { id: req.params.gigId },
+      data: {
+        title,
+        description,
+        deliveryTime: parseInt(time),
+        category,
+        features,
+        price: parseInt(price),
+        shortDesc,
+        revisions: parseInt(revisions),
+        ...(newImages ? { images: newImages } : {}),
+      },
+    });
+
+    return res.status(200).send("Successfuly updated the gig.");
   } catch (err) {
     console.log(err);
     return res.status(500).send("Internal Server Error.");
+  }
+};
+
+export const deleteOwnGig = async (req, res, next) => {
+  try {
+    const { gigId } = req.params;
+    if (!gigId) {
+      return res.status(400).json({ message: "GigId is required." });
+    }
+
+    const gig = await prisma.gig.findUnique({ where: { id: gigId } });
+    if (!gig) {
+      return res.status(404).json({ message: "Gig not found." });
+    }
+
+    if (gig.userId !== req.userId) {
+      return res.status(403).json({ message: "Forbidden." });
+    }
+
+    const orderCount = await prisma.order.count({ where: { gigId } });
+    if (orderCount > 0) {
+      return res.status(400).json({
+        message: "Cannot delete a gig that has orders.",
+      });
+    }
+
+    await prisma.favorite.deleteMany({ where: { gigId } });
+    await prisma.reviews.deleteMany({ where: { gigId } });
+    await prisma.gig.delete({ where: { id: gigId } });
+
+    return res.status(200).json({ message: "Gig deleted" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Internal Server Error." });
   }
 };
 

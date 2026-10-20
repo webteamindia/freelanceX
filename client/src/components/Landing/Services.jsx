@@ -15,7 +15,7 @@ const Services = () => {
             key={name}
             className="flex flex-col justify-center items-center cursor-pointer bg-zinc-900/40 hover:bg-zinc-800/60 backdrop-blur-sm border border-zinc-800 hover:border-primary p-8 transition-all duration-300 rounded-[1.5rem] hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(29,191,115,0.15)] group"
             onClick={() =>
-              router.push(`/search?category=${name.toLowerCase()}`)
+              router.push(`/search?category=${encodeURIComponent(name)}`)
             }
           >
             <div className="relative h-16 w-16 mb-4 group-hover:scale-110 transition-transform duration-300">

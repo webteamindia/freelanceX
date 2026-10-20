@@ -12,6 +12,7 @@ const PayPalCheckout = dynamic(() => import("../components/PayPalCheckout"), {
 
 const CheckoutPage = () => {
   const [orderId, setOrderId] = useState("");
+  const [simulateCheckout, setSimulateCheckout] = useState(false);
   const [orderSummary, setOrderSummary] = useState(null);
   const [cookies] = useCookies();
   const router = useRouter();
@@ -31,12 +32,17 @@ const CheckoutPage = () => {
         );
         if (data?.orderId) {
           setOrderId(data.orderId);
+          setSimulateCheckout(Boolean(data.simulate));
           setOrderSummary({
             platformFee: data.platformFee,
             sellerEarnings: data.sellerEarnings,
             feePercent: data.feePercent,
           });
-          toast.success("Order ready — pay with PayPal");
+          toast.success(
+            data.simulate
+              ? "Order ready — use Simulate payment"
+              : "Order ready — pay with PayPal"
+          );
         }
       } catch (err) {
         console.error(err);
@@ -80,7 +86,7 @@ const CheckoutPage = () => {
       ) : !gigId ? (
         <p className="text-zinc-400">Missing gig. Go back and choose a gig to order.</p>
       ) : orderId ? (
-        <PayPalCheckout orderId={orderId} />
+        <PayPalCheckout orderId={orderId} simulate={simulateCheckout} />
       ) : (
         <p className="text-zinc-400">Preparing checkout…</p>
       )}

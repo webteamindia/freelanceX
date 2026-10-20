@@ -26,6 +26,7 @@ export const ADD_GIG_ROUTE = `${GIG_ROUTES}/add`;
 export const GET_ALL_USER_GIGS_ROUTE = `${GIG_ROUTES}`;
 export const GET_GIG_BY_ID_ROUTE = `${GIG_ROUTES}/get`;
 export const UPDATE_GIG_ROUTE = `${GIG_ROUTES}/edit`;
+export const DELETE_GIG_ROUTE = `${GIG_ROUTES}`;
 export const SEARCH_GIGS_ROUTE = `${GIG_ROUTES}/search`;
 export const CHECK_USER_ORDERED_GIG_ROUTE = `${GIG_ROUTES}/check-gig-order`;
 export const ADD_REVIEW_ROUTE = `${GIG_ROUTES}/review`;

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import React from "react";
-import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaTiktok } from "react-icons/fa";
+import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram } from "react-icons/fa";
+import { categories } from "../utils/categories";
+
+const footerCategories = categories.slice(0, 5);
 
 const Footer = () => {
   return (
@@ -39,20 +42,25 @@ const Footer = () => {
           <div>
             <h4 className="text-white font-outfit font-semibold text-lg mb-6">Categories</h4>
             <ul className="flex flex-col gap-4 text-zinc-400 font-inter text-sm">
-              <li><Link href="/search?category=Graphics%20%26%20Design" className="hover:text-primary transition-colors">Graphics & Design</Link></li>
-              <li><Link href="/search?category=Digital%20Marketing" className="hover:text-primary transition-colors">Digital Marketing</Link></li>
-              <li><Link href="/search?category=Writing%20%26%20Translation" className="hover:text-primary transition-colors">Writing & Translation</Link></li>
-              <li><Link href="/search?category=Video%20%26%20Animation" className="hover:text-primary transition-colors">Video & Animation</Link></li>
-              <li><Link href="/search?category=Programming%20%26%20Tech" className="hover:text-primary transition-colors">Programming & Tech</Link></li>
+              {footerCategories.map(({ name }) => (
+                <li key={name}>
+                  <Link
+                    href={`/search?category=${encodeURIComponent(name)}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <h4 className="text-white font-outfit font-semibold text-lg mb-6">About</h4>
             <ul className="flex flex-col gap-4 text-zinc-400 font-inter text-sm">
-              <li><Link href="/careers" className="hover:text-primary transition-colors">Careers</Link></li>
-              <li><Link href="/press" className="hover:text-primary transition-colors">Press & News</Link></li>
-              <li><Link href="/partnerships" className="hover:text-primary transition-colors">Partnerships</Link></li>
+              <li><Link href="/how-it-works" className="hover:text-primary transition-colors">How it works</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Press & News</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Partnerships</Link></li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
             </ul>
@@ -62,7 +70,7 @@ const Footer = () => {
             <h4 className="text-white font-outfit font-semibold text-lg mb-6">Support</h4>
             <ul className="flex flex-col gap-4 text-zinc-400 font-inter text-sm">
               <li><Link href="/help" className="hover:text-primary transition-colors">Help & Support</Link></li>
-              <li><Link href="/trust" className="hover:text-primary transition-colors">Trust & Safety</Link></li>
+              <li><Link href="/privacy" className="hover:text-primary transition-colors">Trust & Safety</Link></li>
               <li><Link href="/how-it-works" className="hover:text-primary transition-colors">Selling on ffiver</Link></li>
               <li><Link href="/how-it-works" className="hover:text-primary transition-colors">Buying on ffiver</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>

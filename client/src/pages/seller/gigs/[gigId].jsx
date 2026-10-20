@@ -50,7 +50,6 @@ const create = () => {
       category &&
       description &&
       features.length &&
-      files.length &&
       price > 0 &&
       shortDesc.length &&
       time > 0 &&

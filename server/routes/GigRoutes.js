@@ -5,6 +5,7 @@ import {
   getGigById,
   searchGigs,
   updateGig,
+  deleteOwnGig,
   addReview,
   checkGigOrder,
   getFavorites,
@@ -31,3 +32,4 @@ gigRoutes.post("/review/:gigId", verifyToken, addReview);
 gigRoutes.get("/favorites", verifyToken, getFavorites);
 gigRoutes.post("/favorites", verifyToken, addFavorite);
 gigRoutes.delete("/favorites/:gigId", verifyToken, removeFavorite);
+gigRoutes.delete("/:gigId", verifyToken, deleteOwnGig);

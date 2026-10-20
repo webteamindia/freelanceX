@@ -167,6 +167,14 @@ const NavBar = () => {
       },
     },
     {
+      name: "Account settings",
+      callback: (e) => {
+        e.stopPropagation();
+        setIsContextMenuVisible(false);
+        router.push("/account/settings");
+      },
+    },
+    {
       name: "Saved gigs",
       callback: (e) => {
         e.stopPropagation();
@@ -504,6 +512,15 @@ const NavBar = () => {
                       }}
                     >
                       Profile
+                    </div>
+                    <div
+                      className="w-full text-left text-zinc-300 hover:text-primary font-medium text-lg cursor-pointer transition-colors"
+                      onClick={() => {
+                        router.push("/account/settings");
+                        setIsOpen(false);
+                      }}
+                    >
+                      Account settings
                     </div>
                     <div
                       className="w-full text-left text-zinc-300 hover:text-primary font-medium text-lg cursor-pointer transition-colors"

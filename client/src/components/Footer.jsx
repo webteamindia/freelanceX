@@ -24,16 +24,40 @@ const Footer = () => {
               Elevate your projects with world-class professionals ready to bring your vision to life.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300">
+              <a
+                href="https://x.com/ffiver"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="ffiver on X"
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300"
+              >
                 <FaTwitter size={18} />
               </a>
-              <a href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300">
+              <a
+                href="https://www.linkedin.com/company/ffiver/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="ffiver on LinkedIn"
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300"
+              >
                 <FaLinkedin size={18} />
               </a>
-              <a href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300">
+              <a
+                href="https://www.instagram.com/ffiveruk/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="ffiver on Instagram"
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300"
+              >
                 <FaInstagram size={18} />
               </a>
-              <a href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300">
+              <a
+                href="https://www.facebook.com/profile.php?id=61573317480630"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="ffiver on Facebook"
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-300"
+              >
                 <FaFacebook size={18} />
               </a>
             </div>

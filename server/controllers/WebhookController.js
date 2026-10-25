@@ -1,4 +1,5 @@
 import { completeOrderFromPayPal } from "../services/orderPaymentService.js";
+import { verifyPayPalWebhookSignature } from "../utils/paypal.js";
 
 /**
  * Extract PayPal checkout order id from webhook payload.
@@ -28,10 +29,20 @@ export const handlePayPalWebhook = async (req, res) => {
     }
 
     const webhookId = process.env.PAYPAL_WEBHOOK_ID;
-    if (webhookId && process.env.NODE_ENV === "production") {
-      const transmissionId = req.headers["paypal-transmission-id"];
-      if (!transmissionId) {
-        console.warn("[webhook] Missing PayPal transmission headers");
+    const isProd = process.env.NODE_ENV === "production";
+    if (isProd && !webhookId) {
+      return res.status(401).json({
+        message: "PAYPAL_WEBHOOK_ID is required in production",
+      });
+    }
+    if (webhookId) {
+      const verified = await verifyPayPalWebhookSignature({
+        headers: req.headers,
+        event,
+        webhookId,
+      });
+      if (!verified) {
+        return res.status(401).json({ message: "Invalid PayPal webhook signature" });
       }
     }
 

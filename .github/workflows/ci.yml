@@ -48,3 +48,27 @@ jobs:
           NEXT_PUBLIC_SERVER_URL: https://api.example.com
           NEXTAUTH_SECRET: ci-build-secret-minimum-32-characters-long
           NEXTAUTH_URL: https://app.example.com
+
+  e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: client/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm run test:e2e
+        env:
+          CI: true
+          NEXT_PUBLIC_SERVER_URL: https://api.example.com
+          NEXTAUTH_SECRET: ci-build-secret-minimum-32-characters-long
+          NEXTAUTH_URL: http://localhost:3000

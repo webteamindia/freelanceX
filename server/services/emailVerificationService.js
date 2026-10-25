@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import prisma from "../prisma/client.js";
-import { sendMail } from "../utils/mailer.js";
+import { isSmtpConfigured, sendMail } from "../utils/mailer.js";
 
 const TOKEN_BYTES = 32;
 const EXPIRY_HOURS = 24;
@@ -65,7 +65,9 @@ export async function verifyEmailToken(token) {
 }
 
 export function requireEmailVerificationEnabled() {
-  return process.env.REQUIRE_EMAIL_VERIFICATION === "true";
+  if (process.env.REQUIRE_EMAIL_VERIFICATION === "false") return false;
+  if (process.env.REQUIRE_EMAIL_VERIFICATION === "true") return true;
+  return isSmtpConfigured();
 }
 
 export async function assertUserEmailVerified(userId) {

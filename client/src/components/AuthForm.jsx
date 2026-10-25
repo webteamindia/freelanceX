@@ -24,6 +24,8 @@ const AuthForm = ({ type }) => {
 
   const [{}, dispatch] = useStateProvider();
   const [values, setValues] = useState({ email: "", password: "" });
+  const [needsTotp, setNeedsTotp] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -50,7 +52,7 @@ const AuthForm = ({ type }) => {
 
       const { data } = await axios.post(
         type === "login" ? LOGIN_ROUTE : SIGNUP_ROUTE,
-        values,
+        { ...values, totpCode },
         { withCredentials: true }
       );
       const { user, jwt, message, verificationSent } = data;
@@ -81,6 +83,13 @@ const AuthForm = ({ type }) => {
 
         if (data?.code === "EMAIL_NOT_VERIFIED") {
           toast.error(data.message || "Please verify your email before signing in.");
+          setLoading(false);
+          return;
+        }
+
+        if (data?.code === "TOTP_REQUIRED") {
+          setNeedsTotp(true);
+          toast.info(data.message || "Enter your authenticator code.");
           setLoading(false);
           return;
         }
@@ -142,6 +151,18 @@ const AuthForm = ({ type }) => {
               value={values.password}
               onChange={handleChange}
             />
+
+            {type === "login" && needsTotp && (
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="Authenticator code"
+                className="bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 p-4 rounded-xl w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-inter"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value)}
+              />
+            )}
 
             {type === "login" && (
               <div className="flex justify-end w-full px-1">

@@ -33,20 +33,21 @@ Last updated after refunds, email verification, WebSockets, and Playwright E2E. 
 | Medium | SMTP for password reset + order emails | Required for verification emails |
 | Medium | `NEXT_PUBLIC_SOCKET_URL` on client | Same host as API (wss in prod) |
 | Medium | Custom domain + update `PUBLIC_URL` / `NEXTAUTH_URL` | |
-| Medium | Cron: `pnpm run auto-release` | Daily on host |
+| Medium | Cron: daily auto-release | GitHub Action `.github/workflows/auto-release.yml` — set `DATABASE_URL` and PayPal secrets |
 | Low | Real `ads.txt` publisher id | Optional |
 
 ## Product / engineering gaps
 
 | Area | Gap | Suggestion |
 |------|-----|------------|
-| Payments | PayPal webhook full signature verify | Handler re-checks via PayPal API; add `PAYPAL_WEBHOOK_ID` verify in prod |
-| Payments | Refunds are status-only | No automatic PayPal money-back API yet — process in PayPal dashboard |
+| Payments | PayPal webhook signature | Production rejects webhooks unless `PAYPAL_WEBHOOK_ID` verifies |
+| Payments | Refunds | Admin approve calls the PayPal capture refund API |
 | Gigs | Create gig requires Cloudinary upload | Smoke test seeds gig via DB; API needs images |
-| Auth | Email verification off by default | Set `REQUIRE_EMAIL_VERIFICATION=true` when SMTP is ready |
-| Auth | No 2FA | Optional for admins |
-| Ops | No error monitoring | Sentry / similar |
-| Ops | E2E not in CI yet | Add Playwright job to GitHub Actions |
+| Auth | Email verification | Turns on automatically when SMTP is configured. Set `REQUIRE_EMAIL_VERIFICATION=false` to keep it off |
+| Auth | Admin 2FA | Account settings → Admin authenticator. Required at login once enabled |
+| Ops | Error monitoring | Set `SENTRY_DSN` on the API |
+| Ops | E2E | Playwright runs in `.github/workflows/ci.yml` |
+| Branding | Public name is ffiver | Site, legal pages, and social accounts use ffiver. The repo folder is freelanceX |
 | Ops | No DB backups policy | MongoDB Atlas backups |
 | Branding | ffiver vs freelanceX mixed | Pick one for marketing |
 

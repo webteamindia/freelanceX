@@ -23,6 +23,9 @@ model User {
   emailVerified    Boolean    @default(false)
   emailVerifyToken String?
   emailVerifyExpiresAt DateTime?
+  /// Admin authenticator secret (base32). Never return this to the client.
+  totpSecret       String?
+  totpEnabled      Boolean    @default(false)
   notifyOrderEmails   Boolean @default(true)
   notifyMessageEmails Boolean @default(true)
   createdAt        DateTime   @default(now())
@@ -67,6 +70,7 @@ model Order {
   platformFeeAmount   Float?
   sellerEarningsAmount Float?
   paypalCaptureId     String?
+  paypalRefundId      String?
   buyerApprovedAt     DateTime?
   paidOutAt           DateTime?
   payoutBatchId       String?

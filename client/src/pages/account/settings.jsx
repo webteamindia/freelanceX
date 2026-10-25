@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useCookies } from "react-cookie";
+import AdminTwoFactor from "../../components/AdminTwoFactor";
 import {
   GET_USER_INFO,
   RESEND_VERIFICATION_ROUTE,
@@ -25,6 +26,8 @@ const AccountSettingsPage = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [cookies] = useCookies();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [totpEnabled, setTotpEnabled] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -49,6 +52,8 @@ const AccountSettingsPage = () => {
         setEmailVerified(user.emailVerified !== false);
         setNotifyOrders(user.notifyOrderEmails !== false);
         setNotifyMessages(user.notifyMessageEmails !== false);
+        setIsAdmin(Boolean(user.isAdmin));
+        setTotpEnabled(Boolean(user.totpEnabled));
       } catch (err) {
         setError("Could not load your profile. Please try again.");
       } finally {
@@ -324,6 +329,7 @@ const AccountSettingsPage = () => {
             Save notification preferences
           </button>
         </section>
+        {isAdmin ? <AdminTwoFactor jwt={cookies.jwt} enabled={totpEnabled} /> : null}
         <div className="pt-4">
           <button
             type="button"

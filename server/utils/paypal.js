@@ -231,3 +231,80 @@ export function extractCaptureDetails(paypalOrderData) {
     status: capture.status,
   };
 }
+
+/**
+ * Refund a captured PayPal payment back to the buyer.
+ * Simulated capture ids (sim_*) succeed without calling PayPal.
+ */
+export async function refundPayPalCapture({ captureId, note }) {
+  if (!captureId) {
+    return { ok: false, error: "No PayPal capture id is stored for this order." };
+  }
+  if (String(captureId).startsWith("sim_")) {
+    return { ok: true, simulated: true };
+  }
+
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${getApiBase()}/v2/payments/captures/${encodeURIComponent(captureId)}/refund`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "PayPal-Request-Id": `refund_${captureId}`,
+      },
+      body: JSON.stringify({
+        note_to_payer: (note || "Refund from ffiver").slice(0, 255),
+      }),
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok || data.status === "COMPLETED") {
+    return { ok: true, refundId: data.id || null, status: data.status || "COMPLETED" };
+  }
+
+  const already =
+    data?.details?.some((d) =>
+      String(d.issue || "").toUpperCase().includes("CAPTURE_FULLY_REFUNDED")
+    ) || data?.name === "CAPTURE_FULLY_REFUNDED";
+  if (already) {
+    return { ok: true, refundId: data.id || null, alreadyRefunded: true };
+  }
+
+  const msg =
+    data?.message ||
+    data?.details?.map((d) => d.description || d.issue).join("; ") ||
+    `PayPal refund failed (${res.status})`;
+  return { ok: false, error: msg };
+}
+
+/**
+ * Confirm a webhook was sent by PayPal.
+ * @see https://developer.paypal.com/docs/api/webhooks/v1/#verify-webhook-signature
+ */
+export async function verifyPayPalWebhookSignature({ headers, event, webhookId }) {
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${getApiBase()}/v1/notifications/verify-webhook-signature`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        auth_algo: headers["paypal-auth-algo"],
+        cert_url: headers["paypal-cert-url"],
+        transmission_id: headers["paypal-transmission-id"],
+        transmission_sig: headers["paypal-transmission-sig"],
+        transmission_time: headers["paypal-transmission-time"],
+        webhook_id: webhookId,
+        webhook_event: event,
+      }),
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  return res.ok && data.verification_status === "SUCCESS";
+}

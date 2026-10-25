@@ -14,6 +14,9 @@ import {
   verifyEmail,
   resendVerificationEmail,
   setNotificationPreferences,
+  setupAdminTotp,
+  enableAdminTotp,
+  disableAdminTotp,
 } from "../controllers/AuthControllers.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 
@@ -36,6 +39,9 @@ authRoutes.post(
   verifyToken,
   setNotificationPreferences
 );
+authRoutes.post("/2fa/setup", verifyToken, setupAdminTotp);
+authRoutes.post("/2fa/enable", verifyToken, enableAdminTotp);
+authRoutes.post("/2fa/disable", verifyToken, disableAdminTotp);
 
 authRoutes.post(
   "/set-user-image",

@@ -11,6 +11,7 @@ import {
   verifyEmailToken,
   requireEmailVerificationEnabled,
 } from "../services/emailVerificationService.js";
+import { generateTotpSecret, verifyTotp } from "../utils/totp.js";
 
 const maxAge = 3 * 24 * 60 * 60;
 
@@ -64,6 +65,15 @@ export const login = async (req, res, next) => {
       });
     }
 
+    if (user.isAdmin && user.totpEnabled) {
+      if (!verifyTotp(user.totpSecret, req.body?.totpCode)) {
+        return res.status(401).json({
+          message: "Enter the 6-digit code from your authenticator app.",
+          code: "TOTP_REQUIRED",
+        });
+      }
+    }
+
     return res.status(200).json({
       user: {
         id: user.id,
@@ -95,7 +105,7 @@ export const getUserInfo = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const { password, ...userWithoutPassword } = user;
+    const { password, totpSecret, ...userWithoutPassword } = user;
     return res.status(200).json({ user: userWithoutPassword });
   } catch (err) {
     console.log(err);
@@ -468,8 +478,69 @@ export const getPublicProfile = async (req, res, next) => {
       return res.status(404).json({ message: "Seller not found" });
     }
 
-    const { password, isAdmin, passwordResets, ...publicInfo } = user;
+    const { password, isAdmin, passwordResets, totpSecret, ...publicInfo } = user;
     return res.status(200).json({ profile: publicInfo });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const setupAdminTotp = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user?.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    const secret = generateTotpSecret();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { totpSecret: secret, totpEnabled: false },
+    });
+    const label = encodeURIComponent(user.email || "admin");
+    const otpauth = `otpauth://totp/ffiver:${label}?secret=${secret}&issuer=ffiver&digits=6&period=30`;
+    return res.status(200).json({
+      secret,
+      otpauth,
+      message: "Add this key to an authenticator app, then confirm with a code.",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const enableAdminTotp = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user?.isAdmin || !user.totpSecret) {
+      return res.status(400).json({ message: "Start authenticator setup first." });
+    }
+    if (!verifyTotp(user.totpSecret, req.body?.totpCode)) {
+      return res.status(400).json({ message: "That code did not match. Try again." });
+    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { totpEnabled: true },
+    });
+    return res.status(200).json({ totpEnabled: true, message: "Authenticator is on." });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const disableAdminTotp = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user?.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    if (user.totpEnabled && !verifyTotp(user.totpSecret, req.body?.totpCode)) {
+      return res.status(400).json({ message: "Enter a current authenticator code to turn this off." });
+    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { totpSecret: null, totpEnabled: false },
+    });
+    return res.status(200).json({ totpEnabled: false, message: "Authenticator is off." });
   } catch (err) {
     next(err);
   }

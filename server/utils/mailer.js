@@ -26,6 +26,10 @@ if (SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS && SMTP_FROM) {
   );
 }
 
+export function isSmtpConfigured() {
+  return Boolean(SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS && SMTP_FROM);
+}
+
 export const sendMail = async ({ to, subject, text, html }) => {
   if (!transporter) {
     console.warn("sendMail called but transporter is not configured.");

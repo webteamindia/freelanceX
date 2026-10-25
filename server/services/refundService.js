@@ -1,5 +1,11 @@
 import prisma from "../prisma/client.js";
 import { notifyRefundUpdate } from "../utils/notifications.js";
+import {
+  extractCaptureDetails,
+  getPayPalOrder,
+  isSimulatedCheckoutOrderId,
+  refundPayPalCapture,
+} from "../utils/paypal.js";
 
 const TERMINAL_PAYOUT = new Set(["released", "cancelled", "refunded"]);
 
@@ -90,14 +96,40 @@ export async function processRefundAsAdmin(orderId, { action, note }) {
     return { ok: false, error: "Invalid action. Use approve or reject." };
   }
 
+  let captureId = order.paypalCaptureId;
+  const simulated = isSimulatedCheckoutOrderId(order.paymentIntent);
+  if (!captureId && order.paymentIntent && !simulated) {
+    const paypalOrder = await getPayPalOrder(order.paymentIntent);
+    captureId = extractCaptureDetails(paypalOrder)?.captureId || null;
+  }
+  if (!captureId && simulated) {
+    captureId = `sim_capture_${order.id}`;
+  }
+
+  const refund = await refundPayPalCapture({
+    captureId,
+    note: note || "Refund approved",
+  });
+  if (!refund.ok) {
+    return { ok: false, error: refund.error || "PayPal refund failed." };
+  }
+
+  const refundNote = [
+    note || "Refund approved. The PayPal capture was refunded to the buyer.",
+    refund.simulated ? "Simulated checkout — no PayPal money was moved." : "",
+    refund.refundId ? `PayPal refund ${refund.refundId}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const updated = await prisma.order.update({
     where: { id: orderId },
     data: {
-      refundStatus: "approved",
+      refundStatus: "completed",
       payoutStatus: "refunded",
-      refundNote:
-        note ||
-        "Refund approved. Funds will not be released to the seller.",
+      paypalCaptureId: captureId || order.paypalCaptureId,
+      paypalRefundId: refund.refundId || order.paypalRefundId || null,
+      refundNote,
       refundProcessedAt: new Date(),
     },
   });

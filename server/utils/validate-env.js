@@ -46,8 +46,11 @@ export const validateProductionEnv = () => {
   requireVar("CLOUDINARY_API_KEY");
   requireVar("CLOUDINARY_API_SECRET");
 
-  requireVar("PAYPAL_CLIENT_ID");
-  requireVar("PAYPAL_CLIENT_SECRET");
+  if (!process.env.PAYPAL_CLIENT_ID?.trim() || !process.env.PAYPAL_CLIENT_SECRET?.trim()) {
+    console.warn(
+      "[freelanceX] PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET is not set. Checkout and payouts stay unavailable until they are configured."
+    );
+  }
 
   if (!process.env.PAYPAL_MODE) {
     console.warn(
